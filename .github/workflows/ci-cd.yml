@@ -97,7 +97,7 @@ jobs:
       - name: Install security tools
         run: |
           python -m pip install --upgrade pip
-          pip install bandit safety trufflehog3 gitleaks
+          pip install bandit safety trufflehog
       - name: Run Bandit
         run: |
           bandit -r . -x tests/,venv/,.venv,__pycache__,web/,microservices/ -f json -o bandit_report.json || true
@@ -108,7 +108,7 @@ jobs:
           echo "✅ Safety check completed"
       - name: Run truffleHog secrets scan
         run: |
-          trufflehog3 . --json -o trufflehog_report.json || true
+          trufflehog filesystem . --json > trufflehog_report.json 2>&1 || true
           echo "✅ TruffleHog secrets scan completed"
       - name: Upload security reports
         uses: actions/upload-artifact@v4
@@ -132,19 +132,6 @@ jobs:
           - 6379:6379
         options: >-
           --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_pass
-          POSTGRES_DB: test_db
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U test_user -d test_db"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -180,7 +167,7 @@ jobs:
           MOCK_MODE: "true"
           GLM_API_KEY: ""
           SLOWAPI_ENABLED: "false"
-          DATABASE_URL: "sqlite:///./test.db"
+          DATABASE_URL: "sqlite+aiosqlite:///:memory:"
           REDIS_HOST: "localhost"
           REDIS_PORT: "6379"
           JWT_SECRET: "test-jwt-secret"

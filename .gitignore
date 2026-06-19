@@ -37,6 +37,16 @@ Thumbs.db
 .cache/
 .pytest_cache/
 
+# Coverage reports
+.coverage
+htmlcov/
+coverage.xml
+
+# Linting & Type checking
+.mypy_cache/
+.ruff_cache/
+.bandit/
+
 # Docker
 docker-compose.override.yml
 
