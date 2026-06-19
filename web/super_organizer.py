@@ -156,7 +156,7 @@ ROOT_FILE_MAPPING = {
 
 def file_hash(filepath: Path) -> str:
     """حساب hash للملف لرصد التكرار."""
-    h = hashlib.md5()
+    h = hashlib.md5(usedforsecurity=False)
     try:
         with open(filepath, "rb") as f:
             for chunk in iter(lambda: f.read(8192), b""):

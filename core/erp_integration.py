@@ -196,7 +196,7 @@ def _stub_erp_call(endpoint: str, payload: dict) -> dict:
     logger.info(f"🔄 [ERP Stub] {endpoint} — payload keys={list(payload.keys())}")
     return {
         "success": True,
-        "erp_reference": f"STUB-{datetime.now().strftime('%Y%m%d%H%M%S')}-{hashlib.md5(str(payload).encode()).hexdigest()[:8]}",
+        "erp_reference": f"STUB-{datetime.now().strftime('%Y%m%d%H%M%S')}-{hashlib.md5(str(payload).encode(), usedforsecurity=False).hexdigest()[:8]}",
         "message": "Stub ERP — no real connection",
         "data": {"id": 0, "state": "draft"},
     }

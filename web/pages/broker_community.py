@@ -35,7 +35,7 @@ def show_broker_community():
             if specialization:
                 params["specialization"] = specialization
             
-            resp = requests.get(f"{API_BASE}/brokers/community", params=params)
+            resp = requests.get(f"{API_BASE}/brokers/community", params=params, timeout=10)
             if resp.status_code == 200:
                 data = resp.json()
                 brokers = data.get("brokers", [])
@@ -76,7 +76,7 @@ def show_broker_community():
         st.subheader(f"📋 ملف الوسيط: {broker_id}")
         
         try:
-            resp = requests.get(f"{API_BASE}/brokers/{broker_id}")
+            resp = requests.get(f"{API_BASE}/brokers/{broker_id}", timeout=10)
             if resp.status_code == 200:
                 profile = resp.json().get("profile", {})
                 broker = profile.get("broker", {})

@@ -33,7 +33,7 @@ if not broker_id:
 # جلب بيانات الوسيط
 # ──────────────────────────────────────────
 try:
-    resp = requests.get(f"{API_BASE}/brokers/{broker_id}")
+    resp = requests.get(f"{API_BASE}/brokers/{broker_id}", timeout=10)
     if resp.status_code != 200:
         st.error(f"خطأ: {resp.status_code} — {resp.json().get('detail', '')}")
         st.stop()
@@ -96,7 +96,7 @@ try:
     # الأراضي التي يديرها
     # ──────────────────────────────────────────
     st.subheader("🏗️ الأراضي التي يديرها هذا الوسيط")
-    lands_resp = requests.get(f"{API_BASE}/brokers/{broker_id}/lands")
+    lands_resp = requests.get(f"{API_BASE}/brokers/{broker_id}/lands", timeout=10)
     if lands_resp.status_code == 200:
         lands_data = lands_resp.json()
         lands = lands_data.get("lands", [])
@@ -123,7 +123,7 @@ try:
     # معاملات العمولات
     # ──────────────────────────────────────────
     st.subheader("💰 معاملات العمولات")
-    txs_resp = requests.get(f"{API_BASE}/brokers/{broker_id}/earnings")
+    txs_resp = requests.get(f"{API_BASE}/brokers/{broker_id}/earnings", timeout=10)
     if txs_resp.status_code == 200:
         txs_data = txs_resp.json()
         earnings = txs_data.get("earnings", {})

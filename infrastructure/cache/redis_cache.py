@@ -103,7 +103,7 @@ def _make_cache_key(prefix: str, *args, **kwargs) -> str:
     if kwargs:
         key_parts.append(str(sorted(kwargs.items())))
     key_str = ":".join(key_parts)
-    key_hash = hashlib.md5(key_str.encode()).hexdigest()[:12]
+    key_hash = hashlib.md5(key_str.encode(), usedforsecurity=False).hexdigest()[:12]
     return f"smartland:{prefix}:{key_hash}"
 
 

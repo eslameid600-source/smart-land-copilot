@@ -979,7 +979,7 @@ def init_stores(
         f"{len(lands_catalog_global)} أرض"
     )
 
-    return investor_store_global, landowner_store_global
+    return investor_store_global, landowner_store_global  # type: ignore[return-value]
 
 
 def _seed_demo_investors(store: InvestorStore) -> None:
@@ -992,7 +992,7 @@ def _seed_demo_investors(store: InvestorStore) -> None:
         ("inv-demo-005", "محمد أشرف سليمان", 800_000),
     ]
 
-    for user_id, name, deposit in demo_investors:
+    for user_id, _name, deposit in demo_investors:
         try:
             store.create(user_id=user_id, initial_deposit=deposit)
         except ValueError:

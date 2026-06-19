@@ -106,6 +106,7 @@ def show_land_registration():
                                     "uploaded_by": st.session_state.get("user_id", ""),
                                 },
                                 files={"file": (uploaded_file.name, file_bytes, uploaded_file.type)},
+                                timeout=30,
                             )
                             if resp.status_code == 200:
                                 st.success("تم رفع الوثيقة بنجاح")
