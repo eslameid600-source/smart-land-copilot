@@ -23,9 +23,9 @@ Smart Land Management Copilot — Account Data Layer
 
 import os
 import uuid
-import time
 import logging
 import threading
+import sys
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any, Tuple
 
@@ -809,8 +809,6 @@ def transfer_ownership(
     if _inv_store is None or _lo_store is None:
         raise ValueError("لم يتم تهيئة المخازن — استدعِ init_stores() أولاً")
 
-    global lands_catalog_global  # assure flake8 this is used in init_stores()
-
     # ─── الخطوة 1: التحقق من الأرض ───
     land = _catalog.get(land_id)
     if not land:
@@ -944,10 +942,9 @@ def init_stores(
     Returns:
         (investor_store, landowner_store)
     """
-    global investor_store_global, landowner_store_global, lands_catalog_global
-
-    investor_store_global = InvestorStore()
-    landowner_store_global = LandownerStore()
+    _mod = sys.modules[__name__]
+    _mod.investor_store_global = InvestorStore()  # type: ignore[attr-defined]
+    _mod.landowner_store_global = LandownerStore()  # type: ignore[attr-defined]
 
     # بناء كتالوج الأراضي
     if lands_data:
@@ -961,22 +958,25 @@ def init_stores(
 
                 # تسجيل المالكين تلقائياً
                 owner_id = lands_catalog_global[lid].get("owner_id", "")
-                if owner_id and not landowner_store_global.exists(owner_id):
-                    landowner_store_global.create(owner_id, default_commission_pct=2.5)
+                if owner_id and landowner_store_global is not None:
+                    if not landowner_store_global.exists(owner_id):
+                        landowner_store_global.create(owner_id, default_commission_pct=2.5)
 
                 # إضافة الأرض لقائمة المالك
-                if owner_id:
+                if owner_id and landowner_store_global is not None:
                     try:
                         landowner_store_global.list_land(owner_id, lands_catalog_global[lid])
                     except ValueError:
                         pass  # الأرض مسجلة مسبقاً
 
     # إنشاء مستثمرين تجريبيين
-    _seed_demo_investors(investor_store_global)
+    if investor_store_global is not None:
+        _seed_demo_investors(investor_store_global)
 
     logger.info(
-        f"تم تهيئة المخازن: {investor_store_global.count()} مستثمر، "
-        f"{landowner_store_global.count()} مالك أرض، {len(lands_catalog_global)} أرض"
+        f"تم تهيئة المخازن: {investor_store_global.count() if investor_store_global else 0} مستثمر، "
+        f"{landowner_store_global.count() if landowner_store_global else 0} مالك أرض، "
+        f"{len(lands_catalog_global)} أرض"
     )
 
     return investor_store_global, landowner_store_global
