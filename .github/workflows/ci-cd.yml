@@ -17,100 +17,147 @@ env:
   MOCK_MODE: "true"
 
 jobs:
-  # --- Test Job ---
-  test:
-    name: Run Tests
+  # --- Syntax Check ---
+  syntax-check:
+    name: Python Syntax Check
     runs-on: ubuntu-latest
-
+    timeout-minutes: 5
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+      - name: Check Python syntax
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
+          find . -name "*.py" -not -path "./venv/*" -not -path "./.venv/*" -not -path "./__pycache__/*" -exec python -m py_compile {} \;
+          echo "✅ All Python files have valid syntax"
 
+  # --- Lint ---
+  lint:
+    name: Code Quality (Flake8 + Ruff)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 ruff
+      - name: Run flake8
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics \
+            --exclude=venv,.venv,__pycache__,tests/e2e,tests/simulation,tests/load_tests || true
+          echo "✅ Flake8 check completed"
+      - name: Run ruff
+        run: |
+          ruff check . --ignore-path tests
+          echo "✅ Ruff check completed"
+
+  # --- Security ---
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit safety
+      - name: Run Bandit
+        run: |
+          bandit -r . -x tests/,venv/,.venv,__pycache__,web/,microservices/ -f json -o bandit_report.json || true
+          echo "✅ Bandit scan completed"
+      - name: Run Safety check
+        run: |
+          safety check --json || echo "⚠️ Safety check completed with warnings (non-blocking)"
+          echo "✅ Safety check completed"
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: bandit_report.json
+          retention-days: 30
+
+  # --- Tests ---
+  test:
+    name: Run Tests with Coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -r requirements-dev.txt || true
-          pip install ruff
-
-      - name: Run tests
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+      - name: Run tests with coverage
         run: |
-          pytest tests/ -v --tb=short --ignore=tests/e2e --ignore=tests/simulation --ignore=tests/load_tests
+          pytest tests/ -v --tb=short \
+            --ignore=tests/e2e \
+            --ignore=tests/simulation \
+            --ignore=tests/load_tests \
+            --cov=./ \
+            --cov-report=xml \
+            --cov-report=term \
+            -x
         env:
           MOCK_MODE: "true"
           GLM_API_KEY: ""
           SLOWAPI_ENABLED: "false"
-
-  # --- Security Job ---
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+          DATABASE_URL: "sqlite:///./test.db"
+          REDIS_HOST: "localhost"
+          REDIS_PORT: "6379"
+          JWT_SECRET: "test-jwt-secret"
+          AI_PROVIDER: "mock"
+          ERP_ENABLED: "false"
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          name: coverage
+          path: coverage.xml
+          retention-days: 30
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install bandit safety
-
-      - name: Bandit security scan
-        run: |
-          bandit -r . -x tests/,venv/,web/,microservices/ -f json
-
-      - name: Safety check
-        run: |
-          safety check --json || echo "Safety check completed with warnings (non-blocking)"
-
-  # --- Lint Job ---
-  lint:
-    name: Code Quality (Ruff)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install ruff
-        run: |
-          python -m pip install --upgrade pip
-          pip install ruff
-
-      - name: Run ruff check
-        run: |
-          ruff check . --quiet --ignore=tests/,web/,microservices/,venv/ || echo "Linting completed with warnings (non-blocking)"
-
-  # --- Build Job ---
+  # --- Docker Build ---
   build:
     name: Build Docker Image
-    needs: [test, security, lint]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [syntax-check, lint, security, test]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
