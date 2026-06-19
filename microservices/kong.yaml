@@ -1,0 +1,135 @@
+# Kong — API Gateway
+# In Minikube, Kong runs in DB-less (declarative) mode.
+# The ConfigMap mounts the kong.yml declarative config.
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-config
+  namespace: smartland
+data:
+  kong.yml: |
+    _format_version: "3.0"
+    services:
+      - name: auth-service
+        url: http://auth-service.smartland.svc.cluster.local:8001
+        routes:
+          - name: auth-route
+            paths:
+              - /api/auth
+            strip_path: false
+        plugins:
+          - name: rate-limiting
+            config: { minute: 100, policy: local }
+          - name: cors
+      - name: land-service
+        url: http://land-service.smartland.svc.cluster.local:8002
+        routes:
+          - name: land-route
+            paths:
+              - /api/lands
+            strip_path: false
+        plugins:
+          - name: rate-limiting
+            config: { minute: 200, policy: local }
+          - name: cors
+      - name: prediction-service
+        url: http://prediction-service.smartland.svc.cluster.local:8003
+        routes:
+          - name: prediction-route
+            paths:
+              - /api/predictions
+            strip_path: false
+        plugins:
+          - name: rate-limiting
+            config: { minute: 50, policy: local }
+          - name: cors
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kong
+  namespace: smartland
+  labels:
+    app: api-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+        - name: kong
+          image: kong:3.8
+          env:
+            - name: KONG_DATABASE
+              value: "off"
+            - name: KONG_DECLARATIVE_CONFIG
+              value: /var/lib/kong/kong.yml
+            - name: KONG_PROXY_LISTEN
+              value: "0.0.0.0:8000"
+            - name: KONG_ADMIN_LISTEN
+              value: "0.0.0.0:8444"
+            - name: KONG_LOG_LEVEL
+              value: info
+            - name: KONG_PLUGINS
+              value: "request-transformer,cors,rate-limiting"
+          ports:
+            - containerPort: 8000
+              name: proxy
+            - containerPort: 8444
+              name: admin
+          volumeMounts:
+            - name: kong-config
+              mountPath: /var/lib/kong
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+      volumes:
+        - name: kong-config
+          configMap:
+            name: kong-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: smartland
+  labels:
+    app: api-gateway
+spec:
+  type: NodePort
+  selector:
+    app: api-gateway
+  ports:
+    - name: proxy
+      port: 8000
+      targetPort: 8000
+      nodePort: 30080
+    - name: admin
+      port: 8444
+      targetPort: 8444
+      nodePort: 30081

@@ -1,0 +1,71 @@
+# Land Service — Kubernetes Deployment + Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: land-service
+  namespace: smartland
+  labels:
+    app: land-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: land-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: land-service
+    spec:
+      containers:
+        - name: land-service
+          image: smartland/land-service:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8002
+          env:
+            - name: GEE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: smartland-secrets
+                  key: gee-api-key
+                  optional: true
+          livenessProbe:
+            httpGet:
+              path: /api/lands/health
+              port: 8002
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/lands/health
+              port: 8002
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: land-service
+  namespace: smartland
+  labels:
+    app: land-service
+spec:
+  type: ClusterIP
+  selector:
+    app: land-service
+  ports:
+    - port: 8002
+      targetPort: 8002

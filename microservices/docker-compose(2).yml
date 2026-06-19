@@ -1,0 +1,145 @@
+version: "3.8"
+
+# ════════════════════════════════════════════════════════════════════════
+# Smart Land Management Copilot — Microservices Architecture
+# ════════════════════════════════════════════════════════════════════════
+#
+# Services:
+#   1. api-gateway     (Kong)      → :8000 — routing, rate-limiting
+#   2. auth-service    (FastAPI)   → :8001 — JWT auth, users
+#   3. land-service    (FastAPI)   → :8002 — land data, matchmaking
+#   4. prediction-service (FastAPI) → :8003 — AI reports, price prediction
+#
+# Quick start:
+#   docker compose up --build -d
+#   Kong Admin:  http://localhost:8001
+#   Kong Proxy:  http://localhost:8000/api/auth/health
+#   Swagger:     http://localhost:8000/api/lands/docs
+#
+# ════════════════════════════════════════════════════════════════════════
+
+services:
+
+  # ══════════════════════════════════════════
+  # 1. API Gateway — Kong
+  # ══════════════════════════════════════════
+  api-gateway:
+    image: kong:3.8
+    container_name: smartland-gateway
+    ports:
+      - "8000:8000"   # Proxy — external traffic
+      - "8001:8444"   # Admin API — management
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /var/lib/kong/kong.yml
+      KONG_PROXY_LISTEN: "0.0.0.0:8000"
+      KONG_ADMIN_LISTEN: "0.0.0.0:8444"
+      KONG_LOG_LEVEL: info
+      KONG_PLUGINS: request-transformer,cors,rate-limiting
+      # Uncomment and set for JWT validation:
+      # KONG_JWT_SECRET: "${JWT_SECRET}"
+    volumes:
+      - ./api-gateway/kong.yml:/var/lib/kong/kong.yml:ro
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      land-service:
+        condition: service_healthy
+      prediction-service:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - smartland-net
+
+  # ══════════════════════════════════════════
+  # 2. Auth Service
+  # ══════════════════════════════════════════
+  auth-service:
+    build:
+      context: ..
+      dockerfile: microservices/auth-service/Dockerfile
+    container_name: smartland-auth
+    environment:
+      JWT_SECRET: "smartland-production-secret-2025-change-me"
+      ACCESS_TOKEN_EXPIRE: "60"
+      REFRESH_TOKEN_EXPIRE: "7"
+    volumes:
+      - ../shared:/app/shared:ro
+    expose:
+      - "8001"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/api/auth/health')"]
+      interval: 8s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - smartland-net
+
+  # ══════════════════════════════════════════
+  # 3. Land Service
+  # ══════════════════════════════════════════
+  land-service:
+    build:
+      context: ..
+      dockerfile: microservices/land-service/Dockerfile
+    container_name: smartland-lands
+    environment:
+      GEE_API_KEY: ""
+    volumes:
+      - ../shared:/app/shared:ro
+      - ../data:/app/legacy/data:ro
+      - ../search_engine.py:/app/legacy/search_engine.py:ro
+      - ../geological:/app/legacy/geological:ro
+    expose:
+      - "8002"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/api/lands/health')"]
+      interval: 8s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - smartland-net
+
+  # ══════════════════════════════════════════
+  # 4. Prediction Service
+  # ══════════════════════════════════════════
+  prediction-service:
+    build:
+      context: ..
+      dockerfile: microservices/prediction-service/Dockerfile
+    container_name: smartland-predictions
+    environment:
+      GLM_API_KEY: "${GLM_API_KEY:-}"
+      GLM_BASE_URL: "${GLM_BASE_URL:-https://openrouter.ai/api/v1/chat/completions}"
+      GLM_MODEL: "${GLM_MODEL:-glm-4-flash}"
+    volumes:
+      - ../shared:/app/shared:ro
+    expose:
+      - "8003"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/api/predictions/health')"]
+      interval: 8s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - smartland-net
+
+
+# ════════════════════════════════════════════════════════════════════════
+# Network
+# ════════════════════════════════════════════════════════════════════════
+networks:
+  smartland-net:
+    driver: bridge
+    name: smartland-msa

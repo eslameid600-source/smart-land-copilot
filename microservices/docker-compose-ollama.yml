@@ -1,0 +1,95 @@
+# Smart Land Management Copilot — Ollama Docker Compose
+# ======================================================
+# تشغيل خدمة Ollama المحلية مع تحميل النموذج الأولي تلقائياً
+#
+# الاستخدام:
+#   docker compose -f docker-compose-ollama.yml up -d
+#
+# انتظر حتى يتم تحميل النموذج (أول مرة ~4-5 GB):
+#   docker compose -f docker-compose-ollama.yml logs -f ollama
+#
+# تغيير النموذج:
+#   OLLAMA_MODEL=llama3:8b docker compose -f docker-compose-ollama.yml up -d
+#
+# التحقق:
+#   curl http://localhost:11434/api/tags
+#
+# توقف:
+#   docker compose -f docker-compose-ollama.yml down
+
+version: "3.9"
+
+services:
+  # ────────────────────────────────────────────────────────────
+  # خدمة Ollama — محرك النماذج المحلي
+  # ────────────────────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: smart-land-ollama
+    restart: unless-stopped
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_ORIGINS=*  # السماح بجميع المصادر (CORS)
+    deploy:
+      resources:
+        reservations:
+          # الحد الأدنى: 4 GB VRAM لـ 7B model
+          # يُنصح بـ 8+ GB لضمان الأداء
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:11434/api/tags || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - smart-land-net
+
+  # ────────────────────────────────────────────────────────────
+  # محمّل النماذج — يحمل النموذج الأولي تلقائياً
+  # ────────────────────────────────────────────────────────────
+  model-puller:
+    image: ollama/ollama:latest
+    container_name: smart-land-model-puller
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+        echo '========================================';
+        echo '  بدء تحميل النموذج الأولي...';
+        echo '  النموذج: ${OLLAMA_MODEL:-qwen2.5:7b}';
+        echo '========================================';
+        ollama --host http://ollama:11434 pull ${OLLAMA_MODEL:-qwen2.5:7b};
+        echo '';
+        echo '========================================';
+        echo '  تم تحميل النموذج بنجاح!';
+        echo '  للتحقق: curl http://localhost:11434/api/tags';
+        echo '========================================';
+      "
+    environment:
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:7b}
+    networks:
+      - smart-land-net
+
+  # ────────────────────────────────────────────────────────────
+  # Streamlit App — تمت إزالته (النسخة الحالية تستخدم FastAPI API routes)
+  # See: api/routes/land.py, api/routes/auth.py, api/routes/prediction.py
+  # ────────────────────────────────────────────────────────────
+
+volumes:
+  ollama_data:
+    name: smart-land-ollama-data
+    driver: local
+
+networks:
+  smart-land-net:
+    name: smart-land-network
+    driver: bridge

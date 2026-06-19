@@ -1,0 +1,75 @@
+# Prediction Service — Kubernetes Deployment + Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prediction-service
+  namespace: smartland
+  labels:
+    app: prediction-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prediction-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: prediction-service
+    spec:
+      containers:
+        - name: prediction-service
+          image: smartland/prediction-service:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8003
+          env:
+            - name: GLM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: smartland-secrets
+                  key: glm-api-key
+                  optional: true
+            - name: GLM_BASE_URL
+              value: "https://openrouter.ai/api/v1/chat/completions"
+            - name: GLM_MODEL
+              value: "glm-4-flash"
+          livenessProbe:
+            httpGet:
+              path: /api/predictions/health
+              port: 8003
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/predictions/health
+              port: 8003
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prediction-service
+  namespace: smartland
+  labels:
+    app: prediction-service
+spec:
+  type: ClusterIP
+  selector:
+    app: prediction-service
+  ports:
+    - port: 8003
+      targetPort: 8003

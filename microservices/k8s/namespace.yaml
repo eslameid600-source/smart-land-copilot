@@ -1,0 +1,25 @@
+# ══════════════════════════════════════════════════════════════
+# Kubernetes Deployment — Smart Land Microservices
+# ══════════════════════════════════════════════════════════════
+#
+# Deploy to Minikube:
+#   minikube start --cpus 4 --memory 8192
+#   eval $(minikube docker-env)
+#   docker build -t smartland/auth-service:1.0  -f microservices/auth-service/Dockerfile .
+#   docker build -t smartland/land-service:1.0  -f microservices/land-service/Dockerfile .
+#   docker build -t smartland/prediction-service:1.0 -f microservices/prediction-service/Dockerfile .
+#   kubectl apply -f microservices/k8s/
+#   kubectl get pods -n smartland
+#   minikube service api-gateway -n smartland --url
+#
+# Teardown:
+#   kubectl delete namespace smartland
+# ══════════════════════════════════════════════════════════════
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: smartland
+  labels:
+    app: smartland-copilot

@@ -1,0 +1,54 @@
+server:
+  http_listen_address: 0.0.0.0:3200
+  grpc_listen_address: 0.0.0.0:9095
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+storage:
+  trace:
+    backend: local
+    local:
+      path: /var/tempo/traces
+    wal:
+      path: /var/tempo/wal
+    pool:
+      max_workers: 100
+      queue_depth: 10000
+
+metrics_generator:
+  processor:
+    span_metrics:
+      dimensions:
+        - http.method
+        - http.status_code
+        - service.name
+      histogram_buckets:
+        - 2ms
+        - 4ms
+        - 8ms
+        - 16ms
+        - 32ms
+        - 64ms
+        - 128ms
+        - 256ms
+        - 512ms
+        - 1s
+        - 5s
+        - 10s
+  storage:
+    path: /var/tempo/generator-wal
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+        send_exemplars: true
+
+overrides:
+  metrics_generator:
+    processors: [span-metrics]
+    generate_native_histograms: true

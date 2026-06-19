@@ -1,0 +1,80 @@
+# Prometheus Configuration — Smart Land Management Copilot
+# ==========================================================
+# يجمع المقاييس من:
+#   - auth-service:8001/metrics
+#   - land-service:8002/metrics
+#   - prediction-service:8003/metrics
+#   - api-gateway (Kong):8444/metrics
+#   - Self-monitoring
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'smartland-local'
+    environment: 'development'
+
+# ── قواعد التنبيه ──
+rule_files:
+  - "alert_rules.yml"
+
+# ── Alertmanager ──
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+# ── نقاط الجمع ──
+scrape_configs:
+
+  # ── Prometheus ذاته ──
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    metrics_path: /metrics
+
+  # ── Auth Service ──
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: ['auth-service:8001']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  # ── Land Service ──
+  - job_name: 'land-service'
+    static_configs:
+      - targets: ['land-service:8002']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  # ── Prediction Service ──
+  - job_name: 'prediction-service'
+    static_configs:
+      - targets: ['prediction-service:8003']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  # ── Kong API Gateway ──
+  - job_name: 'kong-gateway'
+    static_configs:
+      - targets: ['api-gateway:8444']
+    metrics_path: /metrics
+
+  # ── Ollama (إن وُجد) ──
+  - job_name: 'ollama'
+    static_configs:
+      - targets: ['ollama:11434']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # ── Node Exporter (مقاييس النظام) ──
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    metrics_path: /metrics
+
+  # ── cAdvisor (مقاييس الحاويات) ──
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    metrics_path: /metrics

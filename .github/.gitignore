@@ -1,0 +1,166 @@
+# 🏗️ Smart Land Copilot
+### نظام إدارة الأراضي والتوصيات العقارية بالذكاء الاصطناعي
+
+[![CI](https://github.com/yourusername/smart-land-copilot/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/smart-land-copilot/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED)
+
+---
+
+## 🌟 المميزات
+
+- **📊 لوحة معلومات (BI Dashboard)** — إحصائيات فورية للمعاملات والأسعار
+- **🗺️ خرائط تفاعلية** — Mapbox GL JS مع Fallback إلى Leaflet
+- **🤖 توصيات ذكية** — Groq API / Ollama (مجاني بالكامل)
+- **💼 نظام وساطة** — Dual-Broker مع قاعدة Winner-Takes-Commission
+- **💰 تكامل ERP** — Odoo, SAP, Microsoft Dynamics
+- **🔔 إشعارات فورية** — Redis Pub/Sub + Push + Email + WhatsApp
+- **🔒 أمان** — JWT, HMAC Signing, Rate Limiting
+- **🧪 اختبارات شاملة** — Unit, Integration, E2E, Load, Security
+
+---
+
+## 🚀 التشغيل السريع
+
+### المتطلبات
+- [Docker](https://docs.docker.com/get-docker/) + [Docker Compose](https://docs.docker.com/compose/install/)
+- لا حاجة لتثبيت Python أو PostgreSQL أو Redis محلياً!
+
+### الخطوات
+
+```bash
+# 1. نسخ المستودع
+git clone https://github.com/yourusername/smart-land-copilot.git
+cd smart-land-copilot
+
+# 2. تشغيل كل الخدمات
+docker compose up -d --build
+```
+
+### 🎯 بعد التشغيل
+
+| الخدمة | الرابط |
+|--------|--------|
+| **API** | http://localhost:8000 |
+| **API Docs** | http://localhost:8000/docs |
+| **Streamlit UI** | http://localhost:8501 |
+| **PostgreSQL** | localhost:5432 |
+| **Redis** | localhost:6379 |
+
+---
+
+## ⚙️ متغيرات البيئة
+
+```bash
+# قاعدة البيانات
+DATABASE_URL=postgresql+asyncpg://smartland:smartland_secret@localhost:5432/smart_land
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# JWT
+JWT_SECRET=your-super-secret-key-change-in-production
+
+# AI (اختياري)
+AI_PROVIDER=mock                 # groq, ollama, mock
+GROQ_API_KEY=gsk_your_groq_key  # من console.groq.com (مجاني)
+
+# ERP (اختياري)
+ERP_ENABLED=false
+ERP_API_URL=http://localhost:8069
+ERP_SYSTEM=odoo
+```
+
+> جميع المتغيرات لها قيم افتراضية — يمكنك التشغيل دون إعداد أي شيء!
+
+---
+
+## 🛠️ أوامر Makefile
+
+| الأمر | الوصف |
+|-------|-------|
+| `make start` | 🔥 تشغيل جميع الخدمات |
+| `make stop` | ⏹️ إيقاف الخدمات |
+| `make logs` | 📋 عرض السجلات |
+| `make test` | ✅ تشغيل الاختبارات |
+| `make test-unit` | 🧪 اختبارات الوحدة |
+| `make test-simulation` | 🤖 محاكاة البوتات |
+| `make test-security` | 🔒 فحص الأمان |
+| `make migrate` | 📦 ترحيل قاعدة البيانات |
+| `make ci` | 🤖 تشغيل CI كامل محلياً |
+
+---
+
+## 🤖 التوصيات الذكية
+
+```python
+from core.ai_recommendation import get_smart_recommendation
+
+rec = await get_smart_recommendation(
+    land_id="LAND-CAI-001",
+    user_id="INV-001",
+    governorate="القاهرة",
+    price_per_sqm_egp=5500.0,
+    total_price_egp=27_500_000.0,
+    total_area_sqm=5000,
+)
+print(rec.ad_description)   # "🌟 استثمار ذكي في القاهرة..."
+print(rec.investment_tip)   # "فرصة استثمارية جيدة..."
+```
+
+يدعم: **Groq API** (مجاني)، **Ollama** (محلي)، **Mock** (بدون API)
+
+---
+
+## 💼 تكامل ERP
+
+```python
+from core.erp_integration import sync_transaction_to_erp
+
+result = await sync_transaction_to_erp(
+    transaction_id="TX-001",
+    land_id="LAND-CAI-001",
+    buyer_id="INV-001",
+    sale_price_egp=500_000.00,
+    commission_egp=25_000.00,
+)
+print(f"ERP Ref: {result.erp_reference}")
+```
+
+يدعم: **Odoo**, **SAP**, **Microsoft Dynamics**, وأنظمة مخصصة.
+
+---
+
+## 📁 هيكل المشروع
+
+```
+smart-land-copilot/
+├── api/                   # FastAPI endpoints
+├── core/                  # منطق الأعمال
+│   ├── erp_integration.py # تكامل ERP
+│   └── ai_recommendation.py # توصيات AI
+├── infrastructure/        # البنية التحتية
+│   ├── database/          # Indexes + Materialized Views
+│   ├── cache/             # Redis Cache
+│   └── gis/               # تحسين الخرائط
+├── tests/                 # الاختبارات
+│   ├── load_tests/        # Locust
+│   ├── simulation/        # بوتات المحاكاة
+│   └── e2e/               # Playwright
+├── docs/                  # التوثيق
+├── docker-compose.yml     # Docker
+├── Makefile               # الأوامر
+└── Dockerfile             # بناء الصور
+```
+
+---
+
+## 📄 الترخيص
+
+MIT License — يمكنك استخدام المشروع بحرية للأغراض التجارية والشخصية.
+
+---
+
+*🛠️ بني بـ ❤️ لفريق Smart Land Copilot*

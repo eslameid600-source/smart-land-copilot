@@ -1,0 +1,131 @@
+version: "3.9"
+
+services:
+  # ─── PostgreSQL ───
+  postgres:
+    image: postgres:15-alpine
+    container_name: smartland-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-smartland}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-smartland_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-smart_land}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/database/payment_system_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-smartland} -d ${POSTGRES_DB:-smart_land}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - smartland-network
+
+  # ─── Redis ───
+  redis:
+    image: redis:7-alpine
+    container_name: smartland-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - smartland-network
+
+  # ─── FastAPI Backend ───
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: smartland-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-smartland}:${POSTGRES_PASSWORD:-smartland_secret}@postgres:5432/${POSTGRES_DB:-smart_land}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-smartland-dev-secret-change-in-production}
+      ERP_ENABLED: ${ERP_ENABLED:-false}
+      ERP_API_URL: ${ERP_API_URL:-}
+      AI_PROVIDER: ${AI_PROVIDER:-mock}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      MAPBOX_ACCESS_TOKEN: ${MAPBOX_ACCESS_TOKEN:-}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+    command: uvicorn api.routes.main:app --host 0.0.0.0 --port 8000 --reload --log-level info
+    networks:
+      - smartland-network
+
+  # ─── Streamlit Frontend ───
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: streamlit
+    container_name: smartland-ui
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    environment:
+      API_BASE_URL: http://app:8000
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-smartland}:${POSTGRES_PASSWORD:-smartland_secret}@postgres:5432/${POSTGRES_DB:-smart_land}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MAPBOX_ACCESS_TOKEN: ${MAPBOX_ACCESS_TOKEN:-}
+    depends_on:
+      - app
+    volumes:
+      - ./:/app
+    command: streamlit run web/app.py --server.port 8501 --server.address 0.0.0.0
+    networks:
+      - smartland-network
+
+  # ─── Notification Worker (Redis Subscriber) ───
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: smartland-worker
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-smartland}:${POSTGRES_PASSWORD:-smartland_secret}@postgres:5432/${POSTGRES_DB:-smart_land}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+    command: python config/notification_worker.py
+    networks:
+      - smartland-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  smartland-network:
+    driver: bridge

@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: smart-land-copilot
+    ports:
+      - "8500:8500"
+    environment:
+      - GLM_API_KEY=${GLM_API_KEY}
+      - GLM_BASE_URL=${GLM_BASE_URL:-https://openrouter.ai/api/v1}
+      - GLM_MODEL=${GLM_MODEL:-glm-5-turbo}
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///land_copilot.db}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - DEBUG_MODE=${DEBUG_MODE:-false}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8500/_stcore/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

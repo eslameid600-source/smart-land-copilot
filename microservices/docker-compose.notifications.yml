@@ -1,0 +1,116 @@
+# Smart Land Management Copilot — Notification Infrastructure
+# ============================================================
+# التشغيل:
+#   docker compose -f docker-compose.notifications.yml up -d
+#
+# يتضمن:
+#   • Redis 7 (Pub/Sub + Streams + Throttle + Dedup)
+#   • Celery Worker (معالجة الإشعارات)
+#   • Celery Beat (مهام دورية — مطابقة كل 10 دقائق)
+
+version: "3.9"
+
+services:
+  # ──────────────────────────────────────────────
+  # Redis — قائمة انتظار + Pub/Sub + Streams
+  # ──────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: smartland-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: >
+      redis-server
+        --maxmemory 256mb
+        --maxmemory-policy allkeys-lru
+        --appendonly yes
+        --appendfsync everysec
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - smartland-net
+
+  # ──────────────────────────────────────────────
+  # Celery Worker — معالج الإشعارات
+  # ──────────────────────────────────────────────
+  notification-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smartland-notification-worker
+    restart: unless-stopped
+    command: >
+      celery -A notification_worker
+        worker --loglevel=info
+        --concurrency=${CELERY_CONCURRENCY:-4}
+        --queues=notifications
+        --max-tasks-per-child=1000
+    environment:
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/1
+      - DATABASE_HOST=${DATABASE_HOST:-db}
+      - DATABASE_PORT=${DATABASE_PORT:-5432}
+      - DATABASE_NAME=${DATABASE_NAME:-smartland}
+      - DATABASE_USER=${DATABASE_USER:-smartland}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD:-smartland123}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - FCM_SERVICE_ACCOUNT_JSON=/app/secrets/fcm-service-account.json
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID:-}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN:-}
+      - TWILIO_FROM_NUMBER=${TWILIO_FROM_NUMBER:-}
+    volumes:
+      - ./core:/app/core
+      - ./infrastructure:/app/infrastructure
+      - ./notification_worker.py:/app/notification_worker.py
+      - fcm_secrets:/app/secrets
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - smartland-net
+
+  # ──────────────────────────────────────────────
+  # Celery Beat — جدولة المهام الدورية
+  # ──────────────────────────────────────────────
+  notification-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smartland-notification-beat
+    restart: unless-stopped
+    command: >
+      celery -A notification_worker
+        beat --loglevel=info
+        --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    environment:
+      - CELERY_BROKER=redis://redis:6379/0
+      - REDIS_HOST=redis
+    volumes:
+      - ./notification_worker.py:/app/notification_worker.py
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - smartland-net
+
+volumes:
+  redis_data:
+    name: smartland-redis-data
+  fcm_secrets:
+    name: smartland-fcm-secrets
+
+networks:
+  smartland-net:
+    name: smartland-network
+    driver: bridge

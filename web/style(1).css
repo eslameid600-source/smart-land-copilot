@@ -1,0 +1,220 @@
+/* Smart Land Management Copilot v4.0 — Custom Styles */
+
+/* ── Global ── */
+.stApp {
+    background-color: #0d1117;
+    color: #c9d1d9;
+}
+
+/* ── Sidebar ── */
+section[data-testid="stSidebar"] {
+    background-color: #161b22;
+    border-right: 1px solid #30363d;
+}
+
+section[data-testid="stSidebar"] h3 {
+    color: #58a6ff;
+    font-weight: 600;
+}
+
+/* ── Main Tabs ── */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 2px;
+    background-color: #161b22;
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background-color: transparent;
+    color: #8b949e;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    background-color: #21262d;
+    color: #c9d1d9;
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: #1f6feb !important;
+    color: #ffffff !important;
+    border-radius: 6px !important;
+}
+
+.stTabs [data-baseweb="tab-highlight"] {
+    background-color: transparent !important;
+    height: 0 !important;
+}
+
+/* ── Metrics ── */
+.stMetric {
+    background-color: #161b22;
+    border-radius: 8px;
+    padding: 12px 16px;
+    border: 1px solid #30363d;
+}
+
+.stMetric label {
+    color: #8b949e;
+    font-size: 12px;
+}
+
+.stMetric [data-testid="stMetricValue"] {
+    color: #f0f6fc;
+    font-weight: 700;
+}
+
+/* ── DataFrames ── */
+.stDataFrame {
+    background-color: #161b22;
+    border-radius: 8px;
+    border: 1px solid #30363d;
+}
+
+/* ── Inputs ── */
+.stSelectbox, .stNumberInput, .stSlider, .stMultiselect {
+    background-color: #161b22;
+}
+
+/* ── Buttons ── */
+.stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, #1f6feb, #388bfd);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.stButton > button[kind="primary"]:hover {
+    background: linear-gradient(135deg, #388bfd, #58a6ff);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(31, 111, 235, 0.4);
+}
+
+/* ── Chat Input ── */
+.stChatInput {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+}
+
+.stChatInput textarea {
+    background-color: #0d1117;
+    color: #c9d1d9;
+}
+
+/* ── Expanders ── */
+.streamlit-expanderHeader {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #58a6ff;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0d1117;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #30363d;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #484f58;
+}
+
+/* ── Tooltips ── */
+.leaflet-tooltip {
+    background-color: #161b22 !important;
+    color: #c9d1d9 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 6px !important;
+    font-size: 12px !important;
+    padding: 6px 10px !important;
+}
+
+.leaflet-popup-content-wrapper {
+    background-color: #161b22 !important;
+    color: #c9d1d9 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 8px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
+}
+
+.leaflet-popup-tip {
+    background-color: #161b22 !important;
+    border: 1px solid #30363d !important;
+}
+
+/* ── Warning/Info boxes ── */
+.stAlert {
+    border-radius: 8px;
+}
+
+/* ── Role Cards ── */
+.role-card {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.role-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+/* ── Account Panel ── */
+.account-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* ── Form Sections ── */
+[data-testid="stForm"] {
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+/* ── Expander in forms ── */
+.streamlit-expanderContent {
+    background-color: #0d1117;
+}
+
+/* ── Status badges ── */
+.status-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ── Progress bars ── */
+.progress-container {
+    background: #2c3e50;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 8px;
+}
+
+.progress-bar {
+    height: 8px;
+    border-radius: 4px;
+    transition: width 0.3s;
+}

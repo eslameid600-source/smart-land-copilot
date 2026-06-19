@@ -1,0 +1,121 @@
+/*
+============================================================
+Smart Land Management Copilot — Custom Stylesheet
+============================================================
+Dark theme customizations for Streamlit components.
+Loaded by app.py on startup.
+============================================================
+*/
+
+/* --- Global Theme Overrides --- */
+.stApp {
+    background-color: #0d1117;
+    color: #ecf0f1;
+}
+
+/* --- Sidebar --- */
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+}
+
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3 {
+    color: #ecf0f1 !important;
+}
+
+/* --- Chat Messages --- */
+.stChatMessage {
+    background-color: #161b22;
+    border-radius: 10px;
+    padding: 8px;
+}
+
+.stChatMessage[data-testid="stChatMessageAssisant"] {
+    background-color: #1a1a2e;
+    border-left: 3px solid #3498db;
+}
+
+.stChatMessage[data-testid="stChatMessageUser"] {
+    background-color: #0d2137;
+    border-left: 3px solid #2ecc71;
+}
+
+/* --- Chat Input --- */
+.stChatInputContainer {
+    border: 1px solid #3498db !important;
+    border-radius: 10px !important;
+}
+
+/* --- Data Tables --- */
+.stDataFrame {
+    background-color: #1a1a2e;
+    border-radius: 8px;
+}
+
+/* --- Form Buttons --- */
+.stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, #2980b9, #3498db);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.stButton > button[kind="primary"]:hover {
+    background: linear-gradient(135deg, #3498db, #5dade2);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
+/* --- Radio Buttons --- */
+.stRadio label {
+    color: #ecf0f1;
+}
+
+/* --- Selectbox --- */
+.stSelectbox label,
+.stNumberInput label,
+.stMultiselect label {
+    color: #ecf0f1;
+}
+
+/* --- Progress Bars --- */
+.stProgress > div > div {
+    background: linear-gradient(90deg, #2980b9, #3498db);
+}
+
+/* --- Expanders --- */
+.streamlit-expanderHeader {
+    color: #ecf0f1;
+}
+
+/* --- Toast Notifications --- */
+[data-testid="stToast"] {
+    background-color: #1a1a2e;
+    border: 1px solid #3498db;
+}
+
+/* --- Metric Cards (sidebar) --- */
+[data-testid="stMetricValue"] {
+    color: #ecf0f1;
+}
+
+/* --- Scrollbar Styling --- */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0d1117;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #2c3e50;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #34495e;
+}

@@ -1,0 +1,38 @@
+# docker-compose.test.yml — PostgreSQL for Integration Tests
+# =======================================================
+#
+# الاستخدام:
+#   cd /path/to/smart-land-copilot-v4-arabic
+#   docker compose -f docker-compose.test.yml up -d
+#   sleep 3   # انتظر PostgreSQL يبدأ
+#
+#   DATABASE_URL="postgresql+asyncpg://smartland:testpass@127.0.0.1:15432/smartland_test" \
+#     python -m pytest tests/test_integration_payment_flow.py -v
+#
+#   docker compose -f docker-compose.test.yml down -v
+
+version: "3.9"
+
+services:
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: smartland-test-pg
+    environment:
+      POSTGRES_USER: smartland
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: smartland_test
+      POSTGRES_INITDB_ARGS: "-E lc_collate=ar_EG.UTF-8 -E lc_ctype=ar_EG.UTF-8"
+    ports:
+      - "15432:5432"
+    volumes:
+      - pg_test_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartland -d smartland_test"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+      start_period: 3s
+    restart: unless-stopped
+
+volumes:
+  pg_test_data:
