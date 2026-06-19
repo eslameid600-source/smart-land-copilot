@@ -403,7 +403,7 @@ def _render_lead_card(lead) -> None:
             </div>
             <div style="color:#bbb;margin-top:6px;">
                 {lead.governorate} — {lead.region_city}
-                {f" | {lead.estimated_area_sqm:,} m\u00b2" if lead.estimated_area_sqm else ""}
+                {(" | " + f"{lead.estimated_area_sqm:,} m²") if lead.estimated_area_sqm else ""}
                 {f" | {lead.estimated_price_per_sqm_egp:,.0f} EGP/m\u00b2" if lead.estimated_price_per_sqm_egp else ""}
                 {est_price}
             </div>

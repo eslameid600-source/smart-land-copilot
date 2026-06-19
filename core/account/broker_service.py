@@ -14,6 +14,7 @@
 import logging
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.account.broker_repository import BrokerRepository
 from core.domain.verification_service import LandVerificationService

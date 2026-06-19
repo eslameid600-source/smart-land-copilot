@@ -7,6 +7,7 @@ infrastructure availability, and multi-use classifications.
 
 import streamlit as st
 import pandas as pd
+from typing import Dict
 
 from data.land_database import get_all_lands, USAGE_COLORS
 from ui.components import render_section_header, render_metric_card, render_land_card
