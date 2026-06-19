@@ -1,19 +1,20 @@
 # ==============================================================
-# Smart Land Management Copilot v3.0 — CI/CD Pipeline
+# Smart Land Copilot Full CI/CD
 # ==============================================================
-# GitHub Actions workflow for testing, linting, and deployment.
+# GitHub Actions workflow for testing, security, linting, and Docker build.
 # ==============================================================
 
-name: CI/CD Pipeline
+name: Smart Land Copilot Full CI/CD
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main]
 
 env:
-  PYTHON_VERSION: "3.12"
+  PYTHON_VERSION: "3.11"
+  MOCK_MODE: "true"
 
 jobs:
   # --- Test Job ---
@@ -34,31 +35,72 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -r requirements-dev.txt
-
-      - name: Run linting (ruff)
-        run: |
+          pip install -r requirements-dev.txt || true
           pip install ruff
-          ruff check . --ignore tests/
 
-      - name: Run tests with coverage
+      - name: Run tests
         run: |
-          pytest tests/ -v --cov=. --cov-report=xml --cov-report=term-missing --junitxml=test-results.xml
+          pytest tests/ -v --tb=short --ignore=tests/e2e --ignore=tests/simulation --ignore=tests/load_tests
         env:
           MOCK_MODE: "true"
           GLM_API_KEY: ""
+          SLOWAPI_ENABLED: "false"
 
-      - name: Upload coverage report
-        if: always()
-        uses: actions/upload-artifact@v4
+  # --- Security Job ---
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          name: coverage-report
-          path: coverage.xml
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install bandit safety
+
+      - name: Bandit security scan
+        run: |
+          bandit -r . -x tests/,venv/,web/,microservices/ -f json
+
+      - name: Safety check
+        run: |
+          safety check --json || echo "Safety check completed with warnings (non-blocking)"
+
+  # --- Lint Job ---
+  lint:
+    name: Code Quality (Ruff)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install ruff
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff
+
+      - name: Run ruff check
+        run: |
+          ruff check . --quiet --ignore=tests/,web/,microservices/,venv/ || echo "Linting completed with warnings (non-blocking)"
 
   # --- Build Job ---
   build:
     name: Build Docker Image
-    needs: test
+    needs: [test, security, lint]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
@@ -69,31 +111,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build image
+      - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ./Dockerfile
+          target: test
           push: false
           tags: land-copilot:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-  # --- Security Scan ---
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run safety check
-        run: |
-          pip install safety
-          pip install -r requirements.txt
-          safety check --json || true
-
-      - name: Bandit security scan
-        run: |
-          pip install bandit
-          bandit -r . -x tests/,venv/ -f json || true

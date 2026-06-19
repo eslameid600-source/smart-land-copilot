@@ -1,3 +1,5 @@
+[![CI/CD](https://github.com/eslameid600-source/smart-land-copilot/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/eslameid600-source/smart-land-copilot/actions/workflows/ci-cd.yml)
+
 # Smart Land Copilot v7.0
 
 منصة ذكية لإدارة الأراضي الاستثمارية في مصر — تجمع بين الاستشعار عن بعد، الذكاء الاصطناعي، والتكامل مع الخدمات الحكومية لتوفير تجربة متكاملة للمستثمرين وملاك الأراضي والوسطاء.

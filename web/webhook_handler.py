@@ -22,8 +22,8 @@ from core.financial.base import (
     PaymentRouter, TransactionStatus,
 )
 from payment.models import PaymentTransaction
-from payment.wallet_store import WalletStore
-from payment.transaction_store import TransactionStore
+from core.financial.service import WalletStore
+from core.financial.service import TransactionStore
 
 logger = logging.getLogger(__name__)
 

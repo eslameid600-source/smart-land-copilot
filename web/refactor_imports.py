@@ -635,12 +635,12 @@ def main():
         return 0 if invalid == 0 else 1
 
     # ── التحويل ──
-    mode = "تطبيق فعلي ✏️" if args.apply else "dry-run 🔍"
+    mode = "[APPLY]" if args.apply else "[DRY-RUN]"
     print(f"\n{'=' * 70}")
-    print(f"إعادة هيكلة الاستيرادات — Clean Architecture ({mode})")
+    print(f"Import Refactoring - Clean Architecture ({mode})")
     print(f"{'=' * 70}")
-    print(f"  المشروع: {PROJECT_ROOT}")
-    print(f"  عدد التحويلات في الخريطة: {len(IMPORT_MAP)}")
+    print(f"  Project: {PROJECT_ROOT}")
+    print(f"  Map entries: {len(IMPORT_MAP)}")
     print()
 
     refactored = ImportRefactorer(IMPORT_MAP, verbose=args.verbose)
