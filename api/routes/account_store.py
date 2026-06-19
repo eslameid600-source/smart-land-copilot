@@ -807,7 +807,9 @@ def transfer_ownership(
     _catalog = lands_catalog or lands_catalog_global
 
     if _inv_store is None or _lo_store is None:
-        raise ValueError("لم يتم تهيئة مخازن الحسابات — استدعِ init_stores() أولاً")
+        raise ValueError("لم يتم تهيئة المخازن — استدعِ init_stores() أولاً")
+
+    global lands_catalog_global  # assure flake8 this is used in init_stores()
 
     # ─── الخطوة 1: التحقق من الأرض ───
     land = _catalog.get(land_id)

@@ -82,7 +82,7 @@ def _render_suggestion_chips() -> None:
     for i, chip in enumerate(SUGGESTION_CHIPS):
         with cols[i % 2]:
             if st.button(chip, key=f"chip_{i}", use_container_width=True):
-                state.chat.auto_query_from_map = chip
+                st.session_state["auto_query_from_map"] = chip
                 st.rerun()
 
 

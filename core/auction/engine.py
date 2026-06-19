@@ -493,7 +493,7 @@ class AuctionEngine:
         for bidder_id in all_bidders:
             try:
                 await self.investor_store.unfreeze_amount(
-                    user_id=bider_id,
+                    user_id=bidder_id,
                     amount=auction.guarantee_deposit_egp,
                 )
                 await self._override_last_tx_description(

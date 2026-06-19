@@ -39,7 +39,7 @@ jobs:
       - name: Run linting (ruff)
         run: |
           pip install ruff
-          ruff check . --ignore=tests/
+          ruff check . --ignore tests/
 
       - name: Run tests with coverage
         run: |

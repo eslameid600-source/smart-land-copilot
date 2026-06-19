@@ -10,6 +10,21 @@ import pandas as pd
 from data.land_database import get_all_lands, get_land_dataframe
 from services.financial_service import FinancialService
 from services.glm_service import get_glm_service
+import json
+
+
+def _format_financial_context(analysis, land) -> str:
+    """تحويل تحليل مالي ونص أرض إلى سياق نصي للـ GLM."""
+    context_parts = []
+    if land:
+        context_parts.append(
+            f"الأرض: {land.get('Land_ID', '')} — {land.get('Region_City', '')} ({land.get('Governorate', '')})\n"
+            f"المساحة: {land.get('Total_Area_Sqm', 0):,} m²\n"
+            f"الاستخدام: {land.get('Allowed_Usage', '')}\n"
+        )
+    if analysis:
+        context_parts.append(json.dumps(vars(analysis) if not isinstance(analysis, dict) else analysis, default=str, ensure_ascii=False))
+    return "\n".join(context_parts)
 from ui.components import render_section_header, render_metric_card, render_cash_flow_table
 
 

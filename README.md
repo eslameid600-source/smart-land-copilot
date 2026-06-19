@@ -56,3 +56,7 @@ smart-land-copilot/
 ## الترخيص
 
 All rights reserved. Smart Land Copilot © 2026
+
+## المستودع
+
+https://github.com/eslameid600-source/smart-land-copilot
