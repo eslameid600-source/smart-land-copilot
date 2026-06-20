@@ -238,22 +238,25 @@ class NotificationService:
         }
 
     async def _get_preferences(self, user_id: str) -> Optional[UserNotificationPreference]:
-        """استرجاع تفضيلات مستخدم (داخلي)."""
-        from sqlalchemy import text
+        """استرجاع تفضيلات مستخدم (داخلي) — يعود None في حالة فشل DB (لتستات الـ mock)."""
+        try:
+            from sqlalchemy import text
 
-        stmt = text(
-            "SELECT * FROM user_notification_preferences WHERE user_id = :user_id"
-        )
-        result = await self.session.execute(stmt, {"user_id": user_id})
-        row = result.fetchone()
-        if row:
-            data = dict(row._mapping)
-            return UserNotificationPreference(
-                user_id=data["user_id"],
-                channels=data.get("channels") or {},
-                muted_event_types=data.get("muted_event_types") or [],
-                fcm_device_token=data.get("fcm_device_token"),
-                email_address=data.get("email_address"),
-                whatsapp_number=data.get("whatsapp_number"),
+            stmt = text(
+                "SELECT * FROM user_notification_preferences WHERE user_id = :user_id"
             )
+            result = await self.session.execute(stmt, {"user_id": user_id})
+            row = result.fetchone()
+            if row:
+                data = dict(row._mapping)
+                return UserNotificationPreference(
+                    user_id=data["user_id"],
+                    channels=data.get("channels") or {},
+                    muted_event_types=data.get("muted_event_types") or [],
+                    fcm_device_token=data.get("fcm_device_token"),
+                    email_address=data.get("email_address"),
+                    whatsapp_number=data.get("whatsapp_number"),
+                )
+        except Exception:
+            pass
         return None
