@@ -9,6 +9,7 @@
 """
 
 import pytest
+import pytest_asyncio
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from unittest.mock import AsyncMock, MagicMock
@@ -22,7 +23,7 @@ from core.account.broker_service import BrokerService
 # إعداد قاعدة بيانات اختبار (SQLite في الذاكرة)
 # ──────────────────────────────────────────
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def db_session():
     """إنشاء جلسة قاعدة بيانات اختبار."""
     engine = create_async_engine("sqlite+aiosqlite:///:memory:")
@@ -51,7 +52,7 @@ def broker_service(db_session):
 # ──────────────────────────────────────────
 
 @pytest.mark.asyncio
-async def test_register_broker(broker_repo):
+async def test_register_broker(broker_repo: BrokerRepository):
     """تسجيل وسيط جديد."""
     broker = await broker_repo.create(
         user_id="user-broker-001",
@@ -66,7 +67,7 @@ async def test_register_broker(broker_repo):
     assert broker["default_commission_rate"] == 5.0
     assert broker["status"] == "inactive"
     assert broker["broker_code"].startswith("BRK-")
-    assert len(broker["broker_code"]) == 11  # BRK- + 8 characters
+    assert len(broker["broker_code"]) == 12  # BRK- + 8 characters = 12 total
 
 
 @pytest.mark.asyncio
@@ -142,16 +143,19 @@ async def test_update_commission_rate_out_of_range(broker_repo):
 # اختبارات التعيينات
 # ──────────────────────────────────────────
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def broker_with_land(broker_repo):
-    """إنشاء وسيط + أرض للاختبارات."""
+    """إنشاء وسيط نشط ومعتمد + أرض للاختبارات."""
     broker = await broker_repo.create(
         user_id="broker-land-001",
         full_name="وسيط تجريبي",
         default_commission_rate=4.0,
     )
-    # نفترض أن هناك أرض بـ land_id "LAND-001"
-    return broker
+    # تفعيل الوسيط وتأكيد التحقق
+    await broker_repo.update_status(broker["id"], "active")
+    await broker_repo.verify_broker(broker["id"], True)
+    # إعادة الجلب
+    return await broker_repo.get(broker["id"])
 
 
 @pytest.mark.asyncio
@@ -191,9 +195,12 @@ async def test_assign_broker_already_assigned(broker_repo, broker_with_land):
 @pytest.mark.asyncio
 async def test_search_active_brokers(broker_repo):
     """البحث عن وسطاء نشطين."""
-    # إنشاء عدة وسطاء
-    await broker_repo.create(user_id="search-1", full_name="بحث واحد")
-    await broker_repo.create(user_id="search-2", full_name="بحث اثنان", specialization=["سكني"])
+    # إنشاء عدة وسطاء وتفعيلهم
+    b1 = await broker_repo.create(user_id="search-1", full_name="بحث واحد")
+    b2 = await broker_repo.create(user_id="search-2", full_name="بحث اثنان", specialization=["سكني"])
+    for b in [b1, b2]:
+        await broker_repo.update_status(b["id"], "active")
+        await broker_repo.verify_broker(b["id"], True)
     
     results = await broker_repo.search(query="بحث", limit=10)
     assert len(results) >= 1

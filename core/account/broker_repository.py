@@ -108,7 +108,13 @@ class BrokerRepository:
 
     async def get(self, broker_id: str) -> Optional[Dict[str, Any]]:
         """استرجاع بيانات وسيط بالمعرف."""
-        stmt = select(Broker).where(Broker.id == broker_id)
+        import uuid
+        # Handle string IDs by converting to UUID if needed
+        try:
+            broker_id_uuid = uuid.UUID(broker_id) if isinstance(broker_id, str) else broker_id
+        except (ValueError, AttributeError):
+            broker_id_uuid = broker_id
+        stmt = select(Broker).where(Broker.id == broker_id_uuid)
         result = await self.session.execute(stmt)
         broker = result.scalar_one_or_none()
         return broker.to_dict() if broker else None
@@ -178,13 +184,39 @@ class BrokerRepository:
         result = await self.session.execute(stmt)
         return [b.to_dict() for b in result.scalars().all()]
 
+    async def verify_broker(self, broker_id: str, verified: bool = True) -> Dict[str, Any]:
+        """تأكيد التحقق من الوسيط بواسطة الإدارة."""
+        import uuid
+        try:
+            broker_id_uuid = uuid.UUID(broker_id) if isinstance(broker_id, str) else broker_id
+        except (ValueError, AttributeError):
+            broker_id_uuid = broker_id
+        stmt = (
+            select(Broker).where(Broker.id == broker_id_uuid).with_for_update()
+        )
+        result = await self.session.execute(stmt)
+        broker = result.scalar_one_or_none()
+        if not broker:
+            raise ValueError(f"الوسيط {broker_id} غير موجود")
+
+        broker.verified_by_admin = verified
+        broker.updated_at = datetime.now(timezone.utc)
+        await self.session.flush()
+        await self.session.refresh(broker)
+        return broker.to_dict()
+
     async def update_status(self, broker_id: str, new_status: str) -> Dict[str, Any]:
         """تحديث حالة الوسيط."""
         if new_status not in [s.value for s in BrokerStatus]:
             raise ValueError(f"حالة غير صالحة: {new_status}")
 
+        import uuid
+        try:
+            broker_id_uuid = uuid.UUID(broker_id) if isinstance(broker_id, str) else broker_id
+        except (ValueError, AttributeError):
+            broker_id_uuid = broker_id
         stmt = (
-            select(Broker).where(Broker.id == broker_id).with_for_update()
+            select(Broker).where(Broker.id == broker_id_uuid).with_for_update()
         )
         result = await self.session.execute(stmt)
         broker = result.scalar_one_or_none()
@@ -202,8 +234,13 @@ class BrokerRepository:
         if not (1.0 <= new_rate <= 20.0):
             raise ValueError("نسبة العمولة يجب أن تكون بين 1% و 20%")
 
+        import uuid
+        try:
+            broker_id_uuid = uuid.UUID(broker_id) if isinstance(broker_id, str) else broker_id
+        except (ValueError, AttributeError):
+            broker_id_uuid = broker_id
         stmt = (
-            select(Broker).where(Broker.id == broker_id).with_for_update()
+            select(Broker).where(Broker.id == broker_id_uuid).with_for_update()
         )
         result = await self.session.execute(stmt)
         broker = result.scalar_one_or_none()
@@ -220,8 +257,13 @@ class BrokerRepository:
 
     async def increment_deals(self, broker_id: str, commission_earned: float) -> Dict[str, Any]:
         """زيادة عدد الصفقات المغلقة وإجمالي العمولات بعد إتمام البيع."""
+        import uuid
+        try:
+            broker_id_uuid = uuid.UUID(broker_id) if isinstance(broker_id, str) else broker_id
+        except (ValueError, AttributeError):
+            broker_id_uuid = broker_id
         stmt = (
-            select(Broker).where(Broker.id == broker_id).with_for_update()
+            select(Broker).where(Broker.id == broker_id_uuid).with_for_update()
         )
         result = await self.session.execute(stmt)
         broker = result.scalar_one_or_none()
@@ -237,7 +279,12 @@ class BrokerRepository:
 
     async def delete(self, broker_id: str) -> bool:
         """حذف وسيط (ليس منطقياً عادة، لكنه متاح)."""
-        stmt = delete(Broker).where(Broker.id == broker_id)
+        import uuid
+        try:
+            broker_id_uuid = uuid.UUID(broker_id) if isinstance(broker_id, str) else broker_id
+        except (ValueError, AttributeError):
+            broker_id_uuid = broker_id
+        stmt = delete(Broker).where(Broker.id == broker_id_uuid)
         result = await self.session.execute(stmt)
         return result.rowcount > 0
 
@@ -262,7 +309,13 @@ class BrokerRepository:
             notes: ملاحظات
         """
         # التحقق من وجود الوسيط
-        broker = await self.get(broker_id)
+        import uuid
+        try:
+            broker_id_uuid = uuid.UUID(broker_id) if isinstance(broker_id, str) else broker_id
+        except (ValueError, AttributeError):
+            broker_id_uuid = broker_id
+        broker_id_str = str(broker_id_uuid)
+        broker = await self.get(str(broker_id_uuid))
         if not broker:
             raise ValueError(f"الوسيط {broker_id} غير موجود")
         if broker["status"] != BrokerStatus.ACTIVE.value:
@@ -286,7 +339,7 @@ class BrokerRepository:
 
         assignment = BrokerAssignment(
             land_id=land_id,
-            broker_id=broker_id,
+            broker_id=broker_id_uuid,
             commission_percent=float(commission_percent),
             status=BrokerAssignmentStatus.ACTIVE,
             notes=notes or None,
@@ -421,8 +474,14 @@ class BrokerRepository:
         commission_amount = sale_amount_egp * (commission_rate_pct / 100.0)
         net_commission = commission_amount - platform_fee_egp
 
+        import uuid
+        try:
+            broker_id_uuid = uuid.UUID(broker_id) if isinstance(broker_id, str) else broker_id
+        except (ValueError, AttributeError):
+            broker_id_uuid = broker_id
+
         tx = BrokerTransaction(
-            broker_id=broker_id,
+            broker_id=broker_id_uuid,
             transaction_id=transaction_id,
             land_id=land_id,
             sale_amount_egp=float(sale_amount_egp),
@@ -440,14 +499,24 @@ class BrokerRepository:
 
     async def get_transaction(self, tx_id: str) -> Optional[Dict[str, Any]]:
         """استرجاع معاملة عمولة."""
-        stmt = select(BrokerTransaction).where(BrokerTransaction.id == tx_id)
+        import uuid
+        try:
+            tx_id_uuid = uuid.UUID(tx_id) if isinstance(tx_id, str) else tx_id
+        except (ValueError, AttributeError):
+            tx_id_uuid = tx_id
+        stmt = select(BrokerTransaction).where(BrokerTransaction.id == tx_id_uuid)
         result = await self.session.execute(stmt)
         tx = result.scalar_one_or_none()
         return tx.to_dict() if tx else None
 
     async def get_broker_earnings(self, broker_id: str) -> Dict[str, Any]:
         """حساب إجمالي أرباح الوسيط."""
-        stmt = select(BrokerTransaction).where(BrokerTransaction.broker_id == broker_id)
+        import uuid
+        try:
+            broker_id_uuid = uuid.UUID(broker_id) if isinstance(broker_id, str) else broker_id
+        except (ValueError, AttributeError):
+            broker_id_uuid = broker_id
+        stmt = select(BrokerTransaction).where(BrokerTransaction.broker_id == broker_id_uuid)
         result = await self.session.execute(stmt)
         txs = result.scalars().all()
 
@@ -466,8 +535,13 @@ class BrokerRepository:
 
     async def mark_transaction_paid(self, tx_id: str) -> Dict[str, Any]:
         """تحديث حالة معاملة العمولة إلى مدفوعة."""
+        import uuid
+        try:
+            tx_id_uuid = uuid.UUID(tx_id) if isinstance(tx_id, str) else tx_id
+        except (ValueError, AttributeError):
+            tx_id_uuid = tx_id
         stmt = (
-            select(BrokerTransaction).where(BrokerTransaction.id == tx_id).with_for_update()
+            select(BrokerTransaction).where(BrokerTransaction.id == tx_id_uuid).with_for_update()
         )
         result = await self.session.execute(stmt)
         tx = result.scalar_one_or_none()

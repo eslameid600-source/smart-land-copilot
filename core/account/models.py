@@ -359,7 +359,7 @@ class Broker(Base):
     __tablename__ = "brokers"
 
     id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(String(36), unique=True, nullable=False, index=True)
+    user_id = Column(String(36), ForeignKey("users.user_id", ondelete="CASCADE"), unique=True, nullable=False, index=True)
     full_name = Column(String(200), nullable=False)
     phone_number = Column(String(20), nullable=True)
     email = Column(String(200), nullable=True)

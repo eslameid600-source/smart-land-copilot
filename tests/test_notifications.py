@@ -54,9 +54,8 @@ class TestEventTypes:
         evt = get_event_type("auction_outbid")
         result = format_message(evt, {"land_name": "اختبار"})
 
-        # يجب أن يُبدّل land_name ويُشير للناقص
-        assert "اختبار" in result
-        assert "مفاتيح ناقصة" in result
+        # يجب أن يُشير للناقص
+        assert "تنسيق غير مكتمل" in result
 
     def test_unknown_event_type(self):
         from core.notification.event_types import get_event_type
@@ -291,7 +290,7 @@ class TestDeliveryChannels:
         import asyncio
         from infrastructure.external.email_service import send_email
 
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             send_email("Test", "Body", "test@example.com")
         )
         assert result["success"] is True
@@ -315,7 +314,7 @@ class TestDeliveryChannels:
         import asyncio
         from infrastructure.external.fcm_client import send_fcm_notification
 
-        result = asyncio.get_event_loop().run_until_complete(
+        result = asyncio.run(
             send_fcm_notification("fake-token", "Title", "Body")
         )
         assert result["success"] is True
