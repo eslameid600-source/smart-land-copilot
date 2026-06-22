@@ -16,14 +16,14 @@ Smart Land Copilot — ERP Integration Module
     - ERP_SYSTEM: نوع النظام (odoo, sap, dynamics, custom)
 """
 
-import os
-import json
 import hashlib
 import hmac
+import json
 import logging
+import os
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
-from typing import Optional, Dict, List, Any
-from dataclasses import dataclass, asdict
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -58,12 +58,12 @@ class ERPTransactionPayload:
     transaction_id: str
     land_id: str
     buyer_id: str
-    buyer_name: str = ""
     seller_id: str
+    sale_price_egp: float
+    buyer_name: str = ""
     seller_name: str = ""
     broker_id: Optional[str] = None
     broker_name: str = ""
-    sale_price_egp: float
     commission_egp: float = 0.0
     platform_fee_egp: float = 0.0
     net_to_seller_egp: float = 0.0
@@ -79,13 +79,13 @@ class ERPLandPayload:
     """بيانات الأرض المرسلة إلى ERP كمخزون."""
     land_id: str
     owner_id: str
-    owner_name: str = ""
     governorate: str
-    region_city: str = ""
     total_area_sqm: float
     price_per_sqm_egp: float
     total_price_egp: float
     status: str  # Available, Sold, Reserved
+    owner_name: str = ""
+    region_city: str = ""
     usage_type: str = ""
     latitude: Optional[float] = None
     longitude: Optional[float] = None

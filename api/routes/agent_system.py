@@ -23,14 +23,13 @@ Smart Land Management Copilot — AI Agent with Function Calling
   GLM_MODEL             — النموذج (الافتراضي: glm-5.2-turbo)
 """
 
-import os
 import json
-import time
 import logging
-import hashlib
-from typing import Any, Callable, Dict, List, Optional
-from dataclasses import dataclass, field
+import os
+import time
+from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -439,12 +438,12 @@ class LandInvestmentAgent:
 
         try:
             # تحويل الاستعلام إلى معايير مطابقة
+            from core.domain.land_database import get_all_lands
             from core.matchmaking.service import (
                 InvestorCriteria,
-                investor_smart_match,
                 format_match_results_for_llm,
+                investor_smart_match,
             )
-            from core.domain.land_database import get_all_lands
 
             criteria = InvestorCriteria(
                 النشاط_المطلوب=arguments.get("activity"),
@@ -511,9 +510,9 @@ class LandInvestmentAgent:
 
             lands = get_all_lands()
             land = None
-            for l in lands:
-                if l.get("المعرف") == land_id or l.get("id") == land_id:
-                    land = l
+            for land_item in lands:
+                if land_item.get("المعرف") == land_id or land_item.get("id") == land_id:
+                    land = land_item
                     break
 
             if land is None:
@@ -525,7 +524,7 @@ class LandInvestmentAgent:
             # استخراج بيانات الأرض
             price_total = float(land.get("السعر_الإجمالي", land.get("total_price", 0)))
             area = float(land.get("المساحة_بالمتر", land.get("area_sqm", 0)))
-            price_sqm = price_total / area if area > 0 else 0
+            price_total / area if area > 0 else 0
             governorate = land.get("المحافظة", "")
             quality = land.get("الجودة", "B")
 
@@ -595,9 +594,7 @@ class LandInvestmentAgent:
 
         try:
             # محاولة استخدام المتجر المتزامن (للمرحلة الحالية)
-            from infrastructure.persistence.account_store import (
-                init_stores, InvestorStore,
-            )
+            from infrastructure.persistence.account_store import init_stores
             inv_store, _ = init_stores()
 
             if hasattr(inv_store, "get_balance"):
@@ -631,8 +628,13 @@ class LandInvestmentAgent:
         logger.info("أداة place_bid — land_id: %s, amount: %s", land_id, amount)
 
         try:
+            from core.auction.engine import (
+                AuctionEngine,
+                AuctionNotActiveError,
+                BidTooLowError,
+                InsufficientBalanceError,
+            )
             from infrastructure.database import get_session
-            from core.auction.engine import AuctionEngine, AuctionNotActiveError, BidTooLowError, InsufficientBalanceError
 
             async with get_session() as session:
                 engine = AuctionEngine(session=session)
@@ -681,15 +683,15 @@ class LandInvestmentAgent:
         logger.info("أداة send_report — land_id: %s", land_id)
 
         try:
-            from core.domain.land_database import get_all_lands
             from core.ai.llm.router import LLMRouter
+            from core.domain.land_database import get_all_lands
 
             # الحصول على بيانات الأرض
             lands = get_all_lands()
             land = None
-            for l in lands:
-                if l.get("المعرف") == land_id or l.get("id") == land_id:
-                    land = l
+            for land_item in lands:
+                if land_item.get("المعرف") == land_id or land_item.get("id") == land_id:
+                    land = land_item
                     break
 
             if land is None:
@@ -1000,6 +1002,7 @@ class LandInvestmentAgent:
 
         # Fallback: استدعاء GLM مباشرة مع tools
         import os
+
         import requests
 
         config = {
@@ -1070,7 +1073,7 @@ class LandInvestmentAgent:
 
             try:
                 result_data = json.loads(result_str)
-                status = result_data.get("status", "")
+                result_data.get("status", "")
                 msg = result_data.get("message", "")
 
                 if tool_name == "search_lands":

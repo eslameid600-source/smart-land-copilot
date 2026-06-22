@@ -14,8 +14,8 @@ from __future__ import annotations
 import streamlit as st
 from streamlit_folium import st_folium
 
-from services.state_manager import get_state
 from services.map_service import get_map_service
+from services.state_manager import get_state
 
 
 def render_map_view() -> None:

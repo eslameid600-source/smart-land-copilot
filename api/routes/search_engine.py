@@ -7,11 +7,18 @@ Enhanced search with:
   3. NEW: Tripartite Classification (Seller Volume/Value, Buyer Category)
   4. NEW: Quality-Rating-aware scoring integration
 """
-from typing import List, Dict, Tuple, Optional
-from collections import Counter
-from data.land_database import get_all_lands, ALL_UTILITIES
-from models.models.models.matchmaking import MatchResult, InvestorCriteria, SellerProfile, BuyerProfile, SellerVolumeTier, SellerValueTier
-from services.rag_service import extract_intent, search_lands, proactive_match as _legacy_proactive_match, filter_lands_by_usage, format_context_for_llm, _generate_fee_breakdown_inline, _format_auction_status_inline, USAGE_ALIASES, GOVERNORATE_ALIASES
+from typing import Dict, List, Optional, Tuple
+
+from data.land_database import get_all_lands
+from models.matchmaking import (
+    BuyerProfile,
+    InvestorCriteria,
+    MatchResult,
+    SellerProfile,
+)
+
+from services.rag_service import proactive_match as _legacy_proactive_match
+
 proactive_match = _legacy_proactive_match
 _QUALITY_WEIGHT = {'AAA': 1.0, 'AA': 0.85, 'A': 0.65, 'B': 0.4}
 _QUALITY_ORDER = {'AAA': 4, 'AA': 3, 'A': 2, 'B': 1}
@@ -165,7 +172,7 @@ def classify_seller(owned_land_ids: List[str], lands_data: Optional[List[Dict]]=
     """
     if lands_data is None:
         lands_data = get_all_lands()
-    land_map = {l['Land_ID']: l for l in lands_data}
+    land_map = {land_item['Land_ID']: land_item for land_item in lands_data}
     total_value = 0.0
     valid_ids = []
     for lid in owned_land_ids:
@@ -226,7 +233,7 @@ def format_match_results_for_llm(matches: List[MatchResult], lands_data: Optiona
         return 'No matching land records found in the database.'
     if lands_data is None:
         lands_data = get_all_lands()
-    land_map = {l['Land_ID']: l for l in lands_data}
+    land_map = {land_item['Land_ID']: land_item for land_item in lands_data}
     lines = ['MATCHED LAND RECORDS (Investment Rating & Matchmaking System)\n' + '=' * 70, '']
     for i, match in enumerate(matches, 1):
         land = land_map.get(match.land_id, {})

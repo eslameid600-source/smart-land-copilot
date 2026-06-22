@@ -4,13 +4,14 @@ Smart Land Management Copilot — Recommendation Engine
 Generates dynamic investment recommendations based on
 current market data, trends, and urgency signals.
 """
-from datetime import datetime, timedelta
-from typing import List, Dict, Optional
-from models.models.models.prediction import PricePrediction
+from datetime import datetime
+from typing import Dict, List, Optional
+
 from models.models.models.land import SaturationLevel
-from services.prediction_service import PredictionService
 from services.density_service import DensityService
 from services.logistics_service import LogisticsService
+from services.prediction_service import PredictionService
+
 
 class RecommendationEngine:
     """

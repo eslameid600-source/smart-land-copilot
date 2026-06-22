@@ -9,36 +9,33 @@
 """
 
 import pytest
-import hashlib
-from datetime import datetime, timezone
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+import pytest_asyncio
+from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
+                                    create_async_engine)
 
-from core.account.models import (
-    Base,
-    OwnedLand,
-    LandDocument,
-    LandGPSLog,
-    DocumentType,
-    LandVerificationStatus,
-)
+from core.account.models import Base, LandVerificationStatus, OwnedLand
 from core.domain.verification_service import LandVerificationService
-
 
 # ──────────────────────────────────────────
 # إعداد قاعدة بيانات اختبار
 # ──────────────────────────────────────────
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def db_session():
-    """إنشاء جلسة قاعدة بيانات اختبار."""
+    """إنشاء جلسة قاعدة بيانات اختبار.
+
+    نستخدم session واحدة طوال الاختبار: نُنشئ user+landowner+land و commit،
+    ثم نُعيد استخدام نفس الـ session للاختبار. هذا يضمن رؤية البيانات.
+    """
     engine = create_async_engine("sqlite+aiosqlite:///:memory:")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    
+
     async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-    async with async_session() as session:
-        # إنشاء مستخدم + مالك أرض للتجربة
-        from core.account.models import User, Landowner
+
+    # session للإعداد
+    async with async_session() as setup_session:
+        from core.account.models import Landowner, User
         user = User(
             user_id="test-owner-001",
             full_name="بائع تجريبي",
@@ -58,14 +55,15 @@ async def db_session():
             investment_status="متاح",
             verification_status=LandVerificationStatus.PENDING,
         )
-        session.add(user)
-        session.add(landowner)
-        session.add(land)
-        await session.flush()
-    
+        setup_session.add(user)
+        setup_session.add(landowner)
+        setup_session.add(land)
+        await setup_session.commit()
+
+    # session للاختبار (نفس الـ engine — يرى البيانات المُلتزمة)
     async with async_session() as session:
         yield session
-    
+
     await engine.dispose()
 
 

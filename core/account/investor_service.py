@@ -7,12 +7,20 @@ Smart Land Management Copilot V4.0
 # core/investor/service.py — خدمة المستثمر
 # ============================================================
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from typing import Optional
+from datetime import datetime, timezone
 
-from infrastructure.database.models import Land, Transaction, Investor, InvestmentHistory
-from core.incentive.service import calculate_incentive, REPEAT_BUYER_THRESHOLD
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from core.account.models import (
+    InvestmentHistory,
+    Investor,
+    Land,
+    LandCommissionSettings,
+    Landowner,
+    LoyaltyPointsLog,
+    Transaction,
+)
 
 
 async def get_or_create_investor(
@@ -140,9 +148,6 @@ async def record_purchase(
 # ============================================================
 # core/landowner/service.py — خدمة صاحب الأرض
 # ============================================================
-
-from sqlalchemy import func
-from infrastructure.database.models import Land, Transaction, Landowner, LandCommissionSettings
 
 
 async def get_or_create_landowner(
@@ -285,9 +290,6 @@ async def get_sales_report(
 # ============================================================
 # core/incentive/service.py — خدمة الحوافز
 # ============================================================
-
-from datetime import datetime, timezone
-from infrastructure.database.models import Investor, LoyaltyPointsLog
 
 REPEAT_BUYER_THRESHOLD = 3       # عدد المشتريات لتفعيل الخصم
 REPEAT_BUYER_DISCOUNT = 5.0     # نسبة الخصم %

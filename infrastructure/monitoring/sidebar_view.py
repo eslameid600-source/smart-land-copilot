@@ -4,14 +4,14 @@ Smart Land Management Copilot — Sidebar View
 Dashboard stats, matchmaking form, and data filters.
 """
 
-import streamlit as st
-from typing import Optional, List
+from typing import Optional
 
-from data.land_database import (
-    summary_stats, get_usage_categories, get_governorates,
-    get_land_dataframe, USAGE_COLORS, ALL_UTILITIES,
-)
-from rag.search_engine import proactive_match, format_context_for_llm
+import streamlit as st
+
+from data.land_database import (ALL_UTILITIES, USAGE_COLORS, get_governorates,
+                                get_land_dataframe, get_usage_categories,
+                                summary_stats)
+from rag.search_engine import proactive_match
 
 
 def render_sidebar() -> Optional[dict]:
@@ -97,7 +97,8 @@ def render_sidebar() -> Optional[dict]:
         st.metric("Total Portfolio Value", f"{stats['total_value_egp']:,.0f} EGP")
 
         # Marketplace stats
-        from services.auction_service import get_auction_engine, get_sourcing_service
+        from services.auction_service import (get_auction_engine,
+                                              get_sourcing_service)
         try:
             eng = get_auction_engine()
             src = get_sourcing_service()

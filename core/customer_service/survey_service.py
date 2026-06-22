@@ -16,10 +16,10 @@ Features:
     - Trend tracking over time
 """
 
-import uuid
 import logging
-from datetime import datetime, timezone, timedelta
-from typing import List, Dict, Optional, Any
+import uuid
+from datetime import datetime, timedelta, timezone
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 

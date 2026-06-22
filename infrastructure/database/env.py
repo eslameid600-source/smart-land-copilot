@@ -16,6 +16,7 @@ from logging.config import fileConfig
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
+
 from alembic import context
 
 # ─── إضافة مسار المشروع ───
@@ -26,8 +27,8 @@ if PROJECT_ROOT not in sys.path:
 # ─── استيراد النماذج (ضروري لـ autogenerate) ───
 from core.account.models import Base  # noqa: E402, F401
 from core.auction.models import Auction, Bid  # noqa: E402, F401
-from payment.models import PaymentTransaction, IdempotencyKey  # noqa: E402, F401
-from core.notification.models import Notification, UserNotificationPreference  # noqa: E402, F401
+from core.notification.models import Notification  # noqa: E402, F401
+from payment.models import IdempotencyKey  # noqa: E402, F401
 
 # ─── إعدادات Alembic ───
 config = context.config

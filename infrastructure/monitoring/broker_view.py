@@ -8,13 +8,13 @@ Brokers with status 'Pending Verification' are blocked from
 accessing the dashboard or managing listings.
 """
 
-import streamlit as st
 import pandas as pd
+import streamlit as st
 
-from services.user_service import get_user_service
+from services.auction_service import get_auction_engine
 from services.broker_delegation_service import get_broker_delegation_service
-from services.auction_service import get_auction_engine, CommissionCalculator
-from ui.components import render_section_header, render_metric_card
+from services.user_service import get_user_service
+from ui.components import render_metric_card, render_section_header
 
 
 def render_broker_view():
@@ -29,7 +29,7 @@ def render_broker_view():
     """
     user_svc = get_user_service()
     delegation_svc = get_broker_delegation_service()
-    auction_engine = get_auction_engine()
+    get_auction_engine()
 
     current_user = _get_current_broker(user_svc)
     if not current_user:
@@ -104,7 +104,7 @@ def render_broker_view():
     with sub_tabs[0]:
         from data.land_database import get_all_lands
         lands = get_all_lands()
-        land_map = {l["Land_ID"]: l for l in lands}
+        land_map = {land["Land_ID"]: land for land in lands}
 
         assigned_ids = current_user.assigned_land_ids
         if not assigned_ids:

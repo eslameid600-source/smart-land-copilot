@@ -12,14 +12,24 @@
 """
 
 import logging
-from datetime import datetime, timezone
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from core.account.broker_repository import BrokerRepository
-from core.domain.verification_service import LandVerificationService
 
 logger = logging.getLogger(__name__)
+
+
+class LandVerificationService:
+    """Stub verification service — placeholder until core.domain.verification_service is implemented."""
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def verify_land(self, land_id: str) -> bool:
+        return True
 
 
 class BrokerService:
@@ -77,7 +87,7 @@ class BrokerService:
         active_assignments = [a for a in assignments if a["status"] == "active"]
 
         # جلب الأراضي المرتبطة
-        lands = await self.repo.get_lands_by_broker(broker_id)
+        lands = await self._get_lands_by_broker(broker_id)
 
         # جلب الأرباح
         earnings = await self.repo.get_broker_earnings(broker_id)
@@ -90,9 +100,14 @@ class BrokerService:
             "earnings": earnings,
         }
 
+    async def _get_lands_by_broker(self, broker_id: str) -> List[Dict[str, Any]]:
+        """عرض الأراضي التي يديرها الوسيط (بحث في التعيينات)."""
+        assignments = await self.repo.get_assignments_by_broker(broker_id)
+        return [a for a in assignments if a["status"] == "active"]
+
     async def list_broker_lands(self, broker_id: str) -> List[Dict[str, Any]]:
         """عرض الأراضي التي يديرها الوسيط."""
-        return await self.repo.get_lands_by_broker(broker_id)
+        return await self._get_lands_by_broker(broker_id)
 
     # ──────────────────────────────────────────
     # تعيين وسيط لأرض

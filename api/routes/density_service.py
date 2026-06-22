@@ -6,7 +6,9 @@ clusters around each land parcel. Produces saturation levels, gap
 reports, and formatting logic for LLM context injection.
 """
 from typing import Dict, List, Optional, Tuple
-from models.models.land import ServiceDensityData, RadiusProfile, SaturationLevel
+
+from models.land import RadiusProfile, SaturationLevel, ServiceDensityData
+
 _SATURATION_THRESHOLDS: Dict[str, Tuple[int, int, int]] = {'retail': (3, 7, 12), 'civic': (2, 5, 8), 'industrial': (3, 8, 15)}
 _GAP_RECOMMENDATIONS: Dict[str, List[Dict]] = {'Retail & Entertainment': [{'usage': 'Hospital / Medical Center', 'rationale': 'Low civic density creates healthcare demand'}, {'usage': 'School / University Campus', 'rationale': 'Residential population needs education facilities'}, {'usage': 'Logistics Hub', 'rationale': 'Industrial gap supports supply-chain demand'}, {'usage': 'Residential Compound', 'rationale': 'Population density justifies housing projects'}], 'Civic Infrastructure': [{'usage': 'Shopping Mall / Retail Complex', 'rationale': 'Underserved retail market for existing population'}, {'usage': 'Entertainment / Amusement Park', 'rationale': 'No entertainment venues in proximity'}, {'usage': 'Medical Facility', 'rationale': 'Healthcare gap in the area'}, {'usage': 'Industrial Zone', 'rationale': 'No industrial competition, first-mover advantage'}], 'Industrial Infrastructure': [{'usage': 'Residential Compound', 'rationale': 'No industrial proximity — clean environment for housing'}, {'usage': 'School / University', 'rationale': 'Quiet zone suitable for educational campus'}, {'usage': 'Hospital / Medical Center', 'rationale': 'Clean air and low pollution support healthcare facilities'}, {'usage': 'Retail & Entertainment', 'rationale': 'Unsaturated retail market for worker/resident population'}]}
 
@@ -195,7 +197,6 @@ class DensityService:
         if 'retail' in category.lower() or 'entertainment' in category.lower():
             return False
         if 'civic' in category.lower():
-            civic_kw = ['residential']
             return False
         if 'industrial' in category.lower():
             return usage_lower in ('industrial', 'logistics')
@@ -203,7 +204,6 @@ class DensityService:
 
     def _generate_verdict(self, overall_score: float, retail_sat: SaturationLevel, civic_sat: SaturationLevel, industrial_sat: SaturationLevel, land: Dict) -> str:
         """Generate a one-line clustering verdict for the land."""
-        sats = [retail_sat, civic_sat, industrial_sat]
         usage = land.get('Allowed_Usage', '')
         if overall_score >= 75:
             verdict = 'Highly clustered zone. Established commercial ecosystem with intense competition. Due diligence on market positioning required.'

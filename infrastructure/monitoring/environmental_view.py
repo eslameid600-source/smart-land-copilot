@@ -5,12 +5,13 @@ Greenery Density Index and Content Creator Studio Suitability Score
 visualizations and detailed breakdowns.
 """
 
-import streamlit as st
 import pandas as pd
+import streamlit as st
 
 from data.land_database import get_all_lands
 from services.environmental_service import get_environmental_service
-from ui.components import render_section_header, render_metric_card, render_progress_bar
+from ui.components import (render_metric_card, render_progress_bar,
+                           render_section_header)
 
 
 def render_environmental_view():
@@ -71,8 +72,8 @@ def render_environmental_view():
         )
 
         land_options = {
-            f"{l['Land_ID']} — {l['Region_City']} ({l['Allowed_Usage']})": l["Land_ID"]
-            for l in lands
+            f"{land['Land_ID']} — {land['Region_City']} ({land['Allowed_Usage']})": land["Land_ID"]
+            for land in lands
         }
         selected_key = st.selectbox("Select Land", list(land_options.keys()), key="env_greenery_land")
         selected_land_id = land_options[selected_key]

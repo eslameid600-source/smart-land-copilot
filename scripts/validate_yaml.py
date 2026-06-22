@@ -1,7 +1,8 @@
 """Validate all YAML files in the project."""
-import yaml
-import sys
 import glob
+import sys
+
+import yaml
 
 errors = []
 for f in glob.glob('**/*.yml', recursive=True) + glob.glob('**/*.yaml', recursive=True):

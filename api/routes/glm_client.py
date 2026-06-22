@@ -20,11 +20,12 @@ Environment Variables
 ============================================================
 """
 
-import os
 import json
 import logging
+import os
+from typing import Generator
+
 import requests
-from typing import Generator, List, Optional
 
 logger = logging.getLogger(__name__)
 

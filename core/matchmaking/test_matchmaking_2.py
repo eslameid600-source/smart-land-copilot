@@ -7,10 +7,10 @@ Unit tests for the matchmaking scoring engine.
 
 import pytest
 
+from config.settings import AppConfig, MatchmakingWeights
 from models.investor import InvestorCriteria
-from models.matchmaking import MatchResult, RiskLevel, RecommendationType, ScoreBreakdown
+from models.matchmaking import RecommendationType, RiskLevel
 from services.matchmaking_service import MatchmakingService
-from config.settings import AppConfig, MatchmakingWeights, ScoringWeights, GLMConfig, SecurityConfig, MapConfig
 
 
 @pytest.fixture
@@ -105,8 +105,9 @@ class TestMatchmakingScoring:
     @staticmethod
     def _make_service(lands_data):
         from unittest.mock import MagicMock
-        from models.land import LandRecord
+
         from config.settings import AppConfig, MatchmakingWeights
+        from models.land import LandRecord
         mock_repo = MagicMock()
         mock_repo.get_all.return_value = [LandRecord.from_dict(d) for d in lands_data]
         config = AppConfig(mock_mode=True, matchmaking_weights=MatchmakingWeights())

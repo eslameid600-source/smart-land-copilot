@@ -14,9 +14,9 @@ This script only moves files (no code modifications). If a target __init__.py
 already exists, the incoming file is renamed to __init__.N.py to avoid data loss.
 """
 
-from pathlib import Path
 import shutil
 import sys
+from pathlib import Path
 
 MARKERS = {
     "# Data package": "data",

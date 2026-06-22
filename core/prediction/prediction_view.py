@@ -4,15 +4,15 @@ Smart Land Management Copilot — Prediction & Recommendations View
 Price predictions, heatmap, and dynamic recommendations.
 """
 
-import streamlit as st
 import pandas as pd
-
+import streamlit as st
 from data.land_database import get_all_lands
+from streamlit_folium import st_folium
+
+from services.map_service import get_map_service
 from services.prediction_service import PredictionService
 from services.recommendation_service import RecommendationEngine
-from services.map_service import get_map_service
-from streamlit_folium import st_folium
-from ui.components import render_section_header, render_metric_card
+from ui.components import render_metric_card, render_section_header
 
 
 def render_prediction_view():

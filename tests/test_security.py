@@ -12,12 +12,12 @@ Security Tests — Bandit & Static Analysis
     pip install bandit
 """
 
-import os
 import json
+import os
 import subprocess
-import pytest
 from pathlib import Path
 
+import pytest
 
 # ══════════════════════════════════════════════
 # 1. Bandit Security Scan
@@ -32,7 +32,7 @@ class TestBanditSecurityScan:
         report_path = Path("bandit_report.json")
 
         try:
-            result = subprocess.run(
+            subprocess.run(
                 ["bandit", "-r", ".", "-f", "json", "-o", str(report_path)],
                 capture_output=True,
                 text=True,
@@ -136,29 +136,61 @@ class TestBanditSecurityScan:
 class TestAPIKeyExposure:
     """التحقق من عدم تسريب مفاتيح API في الكود."""
 
-    KEY_PATTERNS = [
+    # أنماط المفاتيح الحقيقية (regex patterns تكتشف المفاتيح الفعلية وليس أسماء المتغيرات)
+    # نكتشف القيم النصية الطويلة المشبوهة، وليس مجرد ذكر اسم المتغير
+    KEY_VALUE_PATTERNS = [
+        # OpenAI / Anthropic keys (تبدأ بـ sk- و20+ حرف بعدها)
+        r"sk-[a-zA-Z0-9]{20,}",
+        # Mapbox tokens (pk. + 20+ حرف)
+        r"pk\.[a-zA-Z0-9]{20,}",
+        # AWS Access Key ID (AKIA + 16 حرف)
+        r"AKIA[0-9A-Z]{16}",
+        # GitHub tokens
+        r"gh[pousr]_[A-Za-z0-9]{36}",
+        # Slack tokens
+        r"xox[baprs]-[A-Za-z0-9-]+",
+        # Google API keys
+        r"AIza[0-9A-Za-z\-_]{35}",
+        # JWT tokens (eyJ...eyJ...)
+        r"eyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+",
+    ]
+
+    # أسماء المتغيرات الشائعة — نتحقق أنها تستخدم getenv ولا تحتوي قيمة نصية
+    SECRET_VAR_NAMES = [
         "GROQ_API_KEY",
         "MAPBOX_ACCESS_TOKEN",
         "JWT_SECRET",
         "ERP_API_KEY",
         "OPENAI_API_KEY",
+        "AWS_SECRET_ACCESS_KEY",
         "AWS_SECRET",
-        "sk-[a-zA-Z0-9]{20,}",  # OpenAI keys
-        "pk\\.[a-zA-Z0-9]{20,}",  # Mapbox keys
     ]
 
-    EXCLUDED_DIRS = {".git", "__pycache__", "node_modules", ".venv", "venv"}
+    EXCLUDED_DIRS = {".git", "__pycache__", "node_modules", ".venv", "venv", ".pytest_cache"}
 
     def test_no_api_keys_in_source_code(self):
         """
         التحقق من عدم وجود مفاتيح API حقيقية في الكود المصدري.
+
+        نكتشف نوعين من المشاكل:
+        1. قيم مفاتيح فعلية (sk-xxx, AKIAxxx, pk.xxx) — مرفوضة تماماً
+        2. متغيرات سرية بتعيين قيمة نصية مباشرة (KEY = "value") بدلاً من os.getenv — مرفوضة
         """
+        import re
         root = Path(".")
         suspicious_files = []
 
+        # نمط: VAR_NAME = "value" (قيمة نصية مباشرة، ليست getenv/env)
+        direct_assignment_re = re.compile(
+            r'^(?:\s*)([A-Z_][A-Z0-9_]*)\s*=\s*["\']([^"\']{8,})["\']',
+            re.MULTILINE,
+        )
+
         for py_file in root.rglob("*.py"):
-            # تخطي المجلدات المستبعدة
+            # تخطي المجلدات المستبعدة + ملف الاختبار نفسه
             if any(excluded in py_file.parts for excluded in self.EXCLUDED_DIRS):
+                continue
+            if py_file.name == "test_security.py":
                 continue
 
             try:
@@ -166,19 +198,32 @@ class TestAPIKeyExposure:
             except Exception:
                 continue
 
-            for pattern in self.KEY_PATTERNS:
-                if pattern in content:
-                    # التحقق من أنها ليست مجرد متغير بيئة
-                    line_num = 0
-                    for line in content.split("\n"):
-                        line_num += 1
-                        if pattern in line and "os.getenv" not in line and "environ" not in line:
-                            suspicious_files.append({
-                                "file": str(py_file),
-                                "line": line_num,
-                                "pattern": pattern,
-                                "content": line.strip()[:100],
-                            })
+            # 1) فحص قيم المفاتيح الفعلية
+            for pattern in self.KEY_VALUE_PATTERNS:
+                for match in re.finditer(pattern, content):
+                    line_num = content[:match.start()].count("\n") + 1
+                    suspicious_files.append({
+                        "file": str(py_file),
+                        "line": line_num,
+                        "pattern": pattern,
+                        "content": match.group(0)[:80],
+                    })
+
+            # 2) فحص الإسناد المباشر لمتغيرات سرية
+            for match in direct_assignment_re.finditer(content):
+                var_name = match.group(1)
+                value = match.group(2)
+                if var_name in self.SECRET_VAR_NAMES:
+                    # استثاء القيم الواضحة أنها placeholder
+                    placeholders = {"your-", "xxx", "change-", "replace-", "test-", "example", "<"}
+                    if not any(p in value.lower() for p in placeholders):
+                        line_num = content[:match.start()].count("\n") + 1
+                        suspicious_files.append({
+                            "file": str(py_file),
+                            "line": line_num,
+                            "pattern": f"{var_name}=<hardcoded>",
+                            "content": match.group(0)[:80],
+                        })
 
         if suspicious_files:
             print("\n⚠️  ملفات قد تحتوي على مفاتيح API:")
@@ -186,7 +231,6 @@ class TestAPIKeyExposure:
                 print(f"  - {item['file']}:{item['line']}")
                 print(f"    {item['content']}")
 
-        # هذا اختبار إعلامي — قد تكون المفاتيح في ملفات .env.example
         assert len(suspicious_files) == 0, (
             f"تم العثور على {len(suspicious_files)} مفتاح API في الكود!"
         )
@@ -269,7 +313,8 @@ class TestMapboxFallback:
         """
         التأكد من أن نظام الخرائط يستخدم fallback عند عدم وجود Mapbox token.
         """
-        from infrastructure.gis.map_optimizer import get_mapbox_config, get_map_html
+        from infrastructure.gis.map_optimizer import (get_map_html,
+                                                      get_mapbox_config)
 
         # محاكاة عدم وجود token
         config = get_mapbox_config()

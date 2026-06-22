@@ -16,11 +16,10 @@ Smart Land Copilot — Free AI Recommendation Engine
     - AI_MODEL: نموذج الذكاء الاصطناعي (llama3-70b-8192, mixtral-8x7b-32768, إلخ)
 """
 
-import os
-import json
 import logging
-from typing import Optional, Dict, Any
+import os
 from dataclasses import dataclass
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 

@@ -5,22 +5,17 @@ Landowner Service — manages landowner profiles, earnings, and withdrawals.
 import logging
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Optional
 
-from sqlalchemy import select, func
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from purchase_module.models import (
-    LandownerProfile, Transaction, Land, LoyaltyPointsLog,
-)
+from purchase_module.models import Land, LandownerProfile, Transaction
 from purchase_module.schemas import (
-    LandownerProfileResponse,
     LandownerDashboardResponse,
+    LandownerProfileResponse,
+    TransactionResponse,
     WithdrawalRequest,
     WithdrawalResponse,
-    TransactionResponse,
-    TransactionStatus,
 )
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -140,15 +135,15 @@ class LandownerService:
         lands_result = await self.db.execute(lands_q)
         listed_lands = [
             {
-                "land_id": l.land_id,
-                "governorate": l.governorate,
-                "region_city": l.region_city,
-                "area_sqm": l.total_area_sqm,
-                "price_per_sqm": float(l.price_per_sqm_egp),
-                "total_price": float(l.price_per_sqm_egp * l.total_area_sqm),
-                "status": l.status,
+                "land_id": land.land_id,
+                "governorate": land.governorate,
+                "region_city": land.region_city,
+                "area_sqm": land.total_area_sqm,
+                "price_per_sqm": float(land.price_per_sqm_egp),
+                "total_price": float(land.price_per_sqm_egp * land.total_area_sqm),
+                "status": land.status,
             }
-            for l in lands_result.scalars().all()
+            for land in lands_result.scalars().all()
         ]
 
         # Sales report from completed transactions

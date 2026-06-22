@@ -32,16 +32,14 @@ SOLID:
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
-from config.settings import get_settings, AppConfig, MatchmakingWeights
-from data.repository import get_repository, LandRepository
+from config.settings import AppConfig, get_settings
+from data.repository import LandRepository, get_repository
 from models.investor import InvestorCriteria
 from models.land import LandRecord
-from models.matchmaking import (
-    MatchResult, MatchmakingReport, ScoreBreakdown,
-    RiskLevel, RecommendationType,
-)
+from models.matchmaking import (MatchmakingReport, MatchResult,
+                                RecommendationType, RiskLevel, ScoreBreakdown)
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +148,7 @@ class MatchmakingService:
                 )
 
             lines.append(
-                f"  Score Breakdown:\n"
+                "  Score Breakdown:\n"
                 + "\n".join(
                     f"    - {sb.category}: {sb.actual_score}/{sb.max_score} "
                     f"({sb.percentage:.0f}%) {'OK' if sb.passed else 'MISS'} — {sb.detail}"

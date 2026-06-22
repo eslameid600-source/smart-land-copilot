@@ -20,13 +20,16 @@ SOLID:
 ============================================================
 """
 from __future__ import annotations
+
 import logging
 import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
-from config.settings import get_settings, AppConfig, ScoringWeights
-from data.repository import get_repository, LandRepository
-from models.models.models.land import LandRecord
+
+from data.repository import LandRepository, get_repository
+
+from config.settings import AppConfig, ScoringWeights, get_settings
+
 logger = logging.getLogger(__name__)
 
 @dataclass

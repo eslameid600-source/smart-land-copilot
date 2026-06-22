@@ -13,10 +13,12 @@ CRUD كامل لملاك الأراضي مع AsyncSession + PostgreSQL.
 """
 import logging
 from datetime import datetime, timezone
-from typing import Optional, List, Dict, Any
-from sqlalchemy import select, func, update
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from core.account.models import Investor, Landowner, OwnedLand
+
+from core.account.models import Landowner, OwnedLand
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +52,6 @@ class LandownerStore:
 
         landowner = Landowner(
             user_id=user_id,
-            full_name_ar=full_name_ar or None,
             default_commission_pct=float(default_commission_pct),
         )
         self.session.add(landowner)
@@ -139,8 +140,12 @@ class LandownerStore:
         owned_land = OwnedLand(
             landowner_id=user_id,
             land_id=land_id,
-            land_name=land_data.get("name", ""),
+            land_name=land_data.get("name", land_data.get("land_name", "")),
             governorate=land_data.get("governorate", ""),
+            region_city=land_data.get("region_city", land_data.get("city", "")),
+            total_area_sqm=int(land_data.get("total_area_sqm", land_data.get("area_sqm", 0)) or 0),
+            price_per_sqm_egp=float(land_data.get("price_per_sqm_egp", 0) or 0),
+            total_price_egp=float(land_data.get("total_price_egp", 0) or 0),
             investment_status=land_data.get("investment_status", "متاح"),
         )
         self.session.add(owned_land)

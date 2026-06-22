@@ -9,9 +9,12 @@ SOLID: SRP — each function renders one concern
 ============================================================
 """
 from __future__ import annotations
+
+from typing import Any, Dict
+
 import streamlit as st
-from typing import Any, Dict, List, Optional
-from models.models.models.land import USAGE_COLORS, ALL_UTILITIES
+from models.land import USAGE_COLORS
+
 
 def compat_color(percent: float) -> str:
     """Return a hex color from red (0%) to green (100%)."""

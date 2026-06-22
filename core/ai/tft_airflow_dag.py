@@ -21,12 +21,12 @@ Smart Land Management Copilot — Monthly Retraining DAG
   - المهلة الزمنية: 3 ساعات
 """
 
-import os
 import json
 import logging
+import os
 import shutil
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict
 
 logger = logging.getLogger(__name__)
 
@@ -351,7 +351,6 @@ def evaluate_and_compare(**context: Dict[str, Any]) -> Dict[str, Any]:
       - إذا كان النموذج الجديد أفضل بـ IMPROVEMENT_THRESHOLD → قبول
       - إذا كان أسوأ → رفض والاحتفاظ بالسابق
     """
-    import numpy as np
 
     new_model_path = context["ti"].xcom_pull(key="model_path", task_ids="train_model_task")
     new_val_loss = context["ti"].xcom_pull(key="best_val_loss", task_ids="train_model_task")
@@ -689,7 +688,6 @@ def run_retraining_pipeline():
     تشغيل خط أنابيب إعادة التدريب بالكامل خارج Airflow.
     مفيد للتطوير والاختبار المحلي.
     """
-    import numpy as np
 
     logger.info("=" * 60)
     logger.info("بدء خط أنابيب إعادة التدريب المحلي")

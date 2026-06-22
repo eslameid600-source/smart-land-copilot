@@ -5,14 +5,16 @@ Full auction dashboard with live bidding, financial breakdown
 tables, land sourcing workflow, and scout management.
 """
 
-import streamlit as st
 import pandas as pd
-
+import streamlit as st
 from data.land_database import get_all_lands
+
 from services.auction_service import (
-    get_auction_engine, get_sourcing_service, CommissionCalculator,
+    CommissionCalculator,
+    get_auction_engine,
+    get_sourcing_service,
 )
-from ui.components import render_section_header, render_metric_card
+from ui.components import render_metric_card, render_section_header
 
 
 def render_auction_view():
@@ -148,8 +150,8 @@ def render_auction_view():
 
         lands = get_all_lands()
         land_options = {
-            f"{l['Land_ID']} — {l['Region_City']} ({l['Allowed_Usage']}) [{l['Investment_Status']}]": l
-            for l in lands
+            f"{ld['Land_ID']} — {ld['Region_City']} ({ld['Allowed_Usage']}) [{ld['Investment_Status']}]": ld
+            for ld in lands
         }
         selected_land_key = st.selectbox("Select Land", list(land_options.keys()), key="fee_land_sel")
         land = land_options[selected_land_key]

@@ -12,10 +12,18 @@
         await inv_store.create(user_id="inv-001", initial_deposit=500_000)
 """
 from core.account.investor_repository import InvestorCrudMixin
-from core.account.wallet_service import WalletOperationsMixin, LOYALTY_POINTS_PER_EGP, LOYALTY_REDEEM_RATE
-from core.account.transaction_repository import TransactionMixin, get_platform_stats
 from core.account.landowner_repository import LandownerStore
-from core.account.transfer_service import InvestorStore, transfer_ownership, PLATFORM_COMMISSION_PCT
+from core.account.transaction_repository import TransactionMixin, get_platform_stats
+from core.account.transfer_service import (
+    PLATFORM_COMMISSION_PCT,
+    InvestorStore,
+    transfer_ownership,
+)
+from core.account.wallet_service import (
+    LOYALTY_POINTS_PER_EGP,
+    LOYALTY_REDEEM_RATE,
+    WalletOperationsMixin,
+)
 
 __all__ = [
     "InvestorStore",

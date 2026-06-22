@@ -18,21 +18,17 @@ E2E Tests — Map UI & Interactive Components
     4. التحقق من ظهور الإشعارات
 """
 
-import pytest
 import os
 from pathlib import Path
 from typing import Generator
 
+import pytest
+
 # Skip all tests if playwright is not installed
 pytest.importorskip("playwright")
 
-from playwright.sync_api import (
-    Page,
-    Browser,
-    BrowserContext,
-    sync_playwright,
-    expect,
-)
+from playwright.sync_api import (Browser, BrowserContext, Page, expect,
+                                 sync_playwright)
 
 # ══════════════════════════════════════════════
 # Fixtures
@@ -67,7 +63,7 @@ def browser() -> Generator[Browser, None, None]:
     """إنشاء متصفح Chromium للاختبارات."""
     with sync_playwright() as p:
         browser = p.chromium.launch(
-            headless=not os.getenv("E2E_HEADED", "").lower() in ("1", "true"),
+            headless=os.getenv("E2E_HEADED", "").lower() not in ("1", "true"),
             args=["--no-sandbox", "--disable-setuid-sandbox"],
         )
         yield browser

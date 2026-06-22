@@ -4,8 +4,8 @@
 عرض قائمة الوسطاء النشطين مع إمكانية البحث.
 """
 
-import streamlit as st
 import requests
+import streamlit as st
 
 API_BASE = "http://localhost:8000/api"
 
@@ -59,7 +59,7 @@ def show_broker_community():
                             st.write(f"**نبذة:** {broker['bio']}")
                         
                         # زر لعرض الملف الكامل
-                        if st.button(f"عرض الملف الكامل", key=f"profile_{broker['id']}"):
+                        if st.button("عرض الملف الكامل", key=f"profile_{broker['id']}"):
                             st.session_state['view_broker_id'] = broker['id']
                             st.rerun()
             else:

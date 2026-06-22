@@ -1,0 +1,1 @@
+"""core.payment — facade."""

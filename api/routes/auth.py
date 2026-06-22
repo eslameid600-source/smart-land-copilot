@@ -3,14 +3,13 @@ JWT + password authentication for the purchase module.
 Integrates with existing user system via a user-lookup callback.
 """
 
-from datetime import datetime, timezone, timedelta
-from typing import Optional, Callable, Awaitable
-from functools import wraps
+from datetime import datetime, timedelta, timezone
+from typing import Callable, Optional
 
-from jose import jwt, JWTError
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
 from passlib.context import CryptContext
-from fastapi import Depends, HTTPException, status, Request
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 # ──────────────────────────────────────────────
 # Configuration

@@ -4,11 +4,10 @@ Pydantic v2 schemas for request/response validation.
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional, List
 from enum import Enum
+from typing import List, Optional
 
 from pydantic import BaseModel, Field, field_validator
-
 
 # ──────────────────────────────────────────────
 # Enums

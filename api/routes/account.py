@@ -34,12 +34,12 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes.investor_router import router as investor_router
-from api.routes.landowner_router import router as landowner_router
-from api.routes.transfer_router import router as transfer_router
-from api.routes.stats_router import router as stats_router
 from api.routes.broker import router as broker_router
+from api.routes.investor_router import router as investor_router
 from api.routes.land import router as land_verification_router
+from api.routes.landowner_router import router as landowner_router
+from api.routes.stats_router import router as stats_router
+from api.routes.transfer_router import router as transfer_router
 
 SERVICE_VERSION = "1.0.0"
 SERVICE_PORT = int(os.getenv("ACCOUNT_SERVICE_PORT", "8004"))
@@ -69,4 +69,4 @@ app.include_router(land_verification_router)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=SERVICE_PORT, reload=True)
+    uvicorn.run("api.routes.account:app", host="0.0.0.0", port=SERVICE_PORT, reload=True)

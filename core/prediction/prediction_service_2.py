@@ -6,9 +6,7 @@ prices based on historical data, location features, and market trends.
 For the prototype, uses simulated historical training data.
 """
 
-import math
-import numpy as np
-from typing import List, Dict, Optional, Tuple
+from typing import Dict, List
 
 from models.prediction import PricePrediction
 
@@ -223,7 +221,7 @@ class PredictionService:
         predictions = self.predict_all(lands, horizon_months)
         heatmap = []
         for pred in predictions:
-            land = next((l for l in lands if l["Land_ID"] == pred.land_id), None)
+            land = next((ld for ld in lands if ld["Land_ID"] == pred.land_id), None)
             if land:
                 heatmap.append({
                     "lat": land["Latitude"],

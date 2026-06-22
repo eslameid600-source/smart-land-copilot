@@ -4,13 +4,17 @@
 GET /accounts/health  → فحص الصحة
 GET /accounts/stats    → إحصائيات عامة
 """
-import time
 import logging
+import time
 
 from fastapi import APIRouter
 
-from core.domain.entities import HealthResponse, APIResponse
-from api.routes._deps import get_investor_store, get_landowner_store, lands_catalog_global
+from api.routes._deps import (
+    get_investor_store,
+    get_landowner_store,
+    lands_catalog_global,
+)
+from core.domain.entities import APIResponse, HealthResponse
 
 logger = logging.getLogger(__name__)
 
@@ -78,12 +82,12 @@ async def account_stats():
             "platform": {
                 "lands_in_catalog": len(lands_catalog_global),
                 "available_lands": sum(
-                    1 for l in lands_catalog_global.values()
-                    if l.get("investment_status") == "متاح"
+                    1 for land_item in lands_catalog_global.values()
+                    if land_item.get("investment_status") == "متاح"
                 ),
                 "sold_lands": sum(
-                    1 for l in lands_catalog_global.values()
-                    if l.get("investment_status") == "مباع"
+                    1 for land_item in lands_catalog_global.values()
+                    if land_item.get("investment_status") == "مباع"
                 ),
             },
         },

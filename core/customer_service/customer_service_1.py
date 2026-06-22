@@ -5,11 +5,10 @@ Support ticket management, auto-escalation, and satisfaction tracking.
 """
 
 import uuid
-from datetime import datetime
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
-from models.ticket import SupportTicket, TicketStatus, TicketPriority
 from config.settings import get_settings
+from models.ticket import SupportTicket, TicketPriority, TicketStatus
 
 
 class CustomerServiceSystem:

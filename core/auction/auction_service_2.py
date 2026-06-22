@@ -4,11 +4,16 @@ Smart Land Management Copilot — Auction & Marketplace Service
 Dynamic Auction & Bidding Engine, Multi-Tiered Commission & Fees
 Calculator, and Land Sourcing & Legal Verification Workflow.
 """
-import uuid
 import logging
+import uuid
 from datetime import datetime
-from typing import List, Dict, Optional, Tuple
-from models.models.models.auction import AuctionRecord, AuctionStatus, Bid, BidStatus, TransactionFeeBreakdown, LandLead, LeadStatus, ListingSource
+from typing import Dict, List, Optional, Tuple
+
+from models.models.models.auction import (AuctionRecord, AuctionStatus, Bid,
+                                          BidStatus, LandLead, LeadStatus,
+                                          ListingSource,
+                                          TransactionFeeBreakdown)
+
 logger = logging.getLogger(__name__)
 
 class AuctionEngine:
@@ -282,15 +287,15 @@ class LandSourcingService:
         """List leads with optional filters."""
         results = list(self._leads.values())
         if scout_id:
-            results = [l for l in results if l.scout_id == scout_id]
+            results = [lead for lead in results if lead.scout_id == scout_id]
         if status:
-            results = [l for l in results if l.status == status]
+            results = [lead for lead in results if lead.status == status]
         return results
 
     def get_lead_stats(self) -> Dict:
         """Return summary statistics for all leads."""
         leads = list(self._leads.values())
-        return {'total_leads': len(leads), 'submitted': sum((1 for l in leads if l.status == LeadStatus.SUBMITTED)), 'documents_uploaded': sum((1 for l in leads if l.status == LeadStatus.DOCUMENTS_UPLOADED)), 'notary_verified': sum((1 for l in leads if l.status == LeadStatus.NOTARY_VERIFIED)), 'rejected': sum((1 for l in leads if l.status == LeadStatus.REJECTED)), 'scout_fee_eligible': sum((1 for l in leads if l.scout_fee_eligible))}
+        return {'total_leads': len(leads), 'submitted': sum((1 for lead in leads if lead.status == LeadStatus.SUBMITTED)), 'documents_uploaded': sum((1 for lead in leads if lead.status == LeadStatus.DOCUMENTS_UPLOADED)), 'notary_verified': sum((1 for lead in leads if lead.status == LeadStatus.NOTARY_VERIFIED)), 'rejected': sum((1 for lead in leads if lead.status == LeadStatus.REJECTED)), 'scout_fee_eligible': sum((1 for lead in leads if lead.scout_fee_eligible))}
 _auction_engine: Optional[AuctionEngine] = None
 _sourcing_service: Optional[LandSourcingService] = None
 

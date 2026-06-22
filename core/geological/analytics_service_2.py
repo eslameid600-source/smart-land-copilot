@@ -18,8 +18,8 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
-from config.settings import get_settings, AppConfig
-from data.repository import get_repository, LandRepository
+from config.settings import AppConfig, get_settings
+from data.repository import LandRepository, get_repository
 from models.land import LandSummary
 
 logger = logging.getLogger(__name__)
@@ -101,7 +101,7 @@ class AnalyticsService:
         if not lands:
             return {"min": 0, "max": 0, "avg": 0}
 
-        prices = [l.price_per_sqm_egp for l in lands]
+        prices = [land.price_per_sqm_egp for land in lands]
         return {
             "min": min(prices),
             "max": max(prices),
@@ -118,7 +118,7 @@ class AnalyticsService:
         if not lands:
             return {"min": 0, "max": 0, "avg": 0}
 
-        areas = [l.total_area_sqm for l in lands]
+        areas = [land.total_area_sqm for land in lands]
         return {
             "min": min(areas),
             "max": max(areas),

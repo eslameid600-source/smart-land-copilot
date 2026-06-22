@@ -11,20 +11,12 @@ Computes:
   5. Logistics Feasibility Matrix (composite investor-grade output)
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, List
 
-from models.land import (
-    LogisticsMeta,
-    RoadQuality,
-    FuelType,
-    CargoAirportTier,
-    RailNetworkType,
-    FleetMaintenanceImpact,
-    FuelTripEstimate,
-    AirFreightConnectivity,
-    RailFreightIntegration,
-)
-
+from models.land import (AirFreightConnectivity, CargoAirportTier,
+                         FleetMaintenanceImpact, FuelTripEstimate, FuelType,
+                         LogisticsMeta, RailFreightIntegration,
+                         RailNetworkType, RoadQuality)
 
 # ────────────────────────────────────────────────────────────
 # Constants
@@ -237,7 +229,7 @@ class LogisticsService:
         for injection into LLM context or feasibility reports.
         """
         analysis = self.analyze(land)
-        raw = land.get("logistics_meta", {})
+        land.get("logistics_meta", {})
         land_id = land["Land_ID"]
         region = f"{land['Governorate']} - {land['Region_City']}"
 
@@ -282,7 +274,7 @@ class LogisticsService:
                     f"  Est. Annual Maintenance:  {fm.estimated_annual_maintenance_egp:,.0f} EGP "
                     f"({_REFERENCE_FLEET_SIZE}-truck fleet)"
                 )
-            lines.append(f"  Key Wear Factors:")
+            lines.append("  Key Wear Factors:")
             for factor in fm.wear_factors:
                 lines.append(f"    - {factor}")
         else:
@@ -400,7 +392,7 @@ class LogisticsService:
         Rail, and Air Freight analysis in a compact tabular format.
         """
         analysis = self.analyze(land)
-        raw = land.get("logistics_meta", {})
+        land.get("logistics_meta", {})
         land_id = land["Land_ID"]
         region = f"{land['Governorate']} - {land['Region_City']}"
         usage = land.get("Allowed_Usage", "")
@@ -909,7 +901,7 @@ class LogisticsService:
             if af.airport_tier == CargoAirportTier.TIER_1_MAJOR:
                 highlights.append(f"Tier-1 cargo airport: {af.nearest_cargo_airport}")
             if af.trucking_transit_hours <= 1.0:
-                highlights.append(f"Under 1h to cargo airport")
+                highlights.append("Under 1h to cargo airport")
 
         if analysis.container_handling_nearby:
             highlights.append("Container terminal nearby")

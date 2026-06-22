@@ -11,12 +11,16 @@ SOLID:
 ============================================================
 """
 from __future__ import annotations
+
 import logging
 from typing import Any, Dict, List, Optional
+
 import pandas as pd
-from config.settings import get_settings, AppConfig
-from data.repository import get_repository, LandRepository
+
+from config.settings import AppConfig, get_settings
+from data.repository import LandRepository, get_repository
 from models.models.land import LandSummary
+
 logger = logging.getLogger(__name__)
 
 class AnalyticsService:
@@ -69,7 +73,7 @@ class AnalyticsService:
             lands = self._repo.get_all()
         if not lands:
             return {'min': 0, 'max': 0, 'avg': 0}
-        prices = [l.price_per_sqm_egp for l in lands]
+        prices = [land.price_per_sqm_egp for land in lands]
         return {'min': min(prices), 'max': max(prices), 'avg': round(sum(prices) / len(prices))}
 
     def get_area_range(self, usage: Optional[str]=None) -> Dict[str, int]:
@@ -80,7 +84,7 @@ class AnalyticsService:
             lands = self._repo.get_all()
         if not lands:
             return {'min': 0, 'max': 0, 'avg': 0}
-        areas = [l.total_area_sqm for l in lands]
+        areas = [land.total_area_sqm for land in lands]
         return {'min': min(areas), 'max': max(areas), 'avg': round(sum(areas) / len(areas))}
 _analytics_service: Optional[AnalyticsService] = None
 

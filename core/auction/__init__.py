@@ -1,1 +1,1 @@
-# core/auction package
+"""core.auction — facade."""

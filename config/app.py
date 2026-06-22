@@ -19,9 +19,9 @@ Architecture:
 ============================================================
 """
 
-import sys
-import os
 import logging
+import os
+import sys
 
 # Ensure project root is on the Python path
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -52,11 +52,10 @@ import streamlit as st
 
 from config.settings import get_settings
 from services.state_manager import get_state
-from ui.sidebar import render_sidebar
 from ui.chat_view import render_chat_view
 from ui.map_view import render_map_view
 from ui.matchmaking_view import render_matchmaking_view
-
+from ui.sidebar import render_sidebar
 
 # ===========================================================
 # CUSTOM CSS
@@ -102,7 +101,7 @@ def main() -> None:
     _load_custom_css()
 
     # Initialize session state
-    state = get_state()
+    get_state()
 
     # ----------------------------------------------------------
     # SIDEBAR

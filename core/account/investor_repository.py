@@ -11,9 +11,11 @@
     - دالة مساعدة لبناء قاموس المحفظة
 """
 import logging
-from typing import Optional, List, Dict, Any
-from sqlalchemy import select, func
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from core.account.models import Investor, WalletTransaction
 
 logger = logging.getLogger(__name__)
@@ -54,7 +56,6 @@ class InvestorCrudMixin:
 
         investor = Investor(
             user_id=user_id,
-            full_name_ar=full_name_ar or None,
             wallet_balance_egp=float(initial_deposit),
         )
         self.session.add(investor)

@@ -4,21 +4,24 @@ Tables: transactions, investor_profiles, landowner_profiles,
         loyalty_points_log, lands (minimal for purchase flow).
 """
 
-from datetime import datetime, timezone
+import uuid
 from decimal import Decimal
 from enum import Enum as PyEnum
-import uuid
-
-from sqlalchemy import (
-    Column, String, Numeric, Integer, DateTime, ForeignKey,
-    CheckConstraint, Index, Text, Boolean,
-)
-from sqlalchemy.dialects.postgresql import UUID, ENUM
-from sqlalchemy.orm import relationship, DeclarativeBase
-from sqlalchemy.sql import func
 
 from purchase_module.database import Base
-
+from sqlalchemy import (
+    CheckConstraint,
+    Column,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    String,
+    Text,
+)
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 # ──────────────────────────────────────────────
 # Enums (PostgreSQL-native when available, str fallback)

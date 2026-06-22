@@ -10,8 +10,15 @@ Computes:
   4. Rail Freight Integration (Conventional + High-Speed Electric)
   5. Logistics Feasibility Matrix (composite investor-grade output)
 """
-from typing import Dict, List, Optional
-from models.models.models.land import LogisticsMeta, RoadQuality, FuelType, CargoAirportTier, RailNetworkType, FleetMaintenanceImpact, FuelTripEstimate, AirFreightConnectivity, RailFreightIntegration
+from typing import Dict, List
+
+from models.models.models.land import (AirFreightConnectivity,
+                                       CargoAirportTier,
+                                       FleetMaintenanceImpact,
+                                       FuelTripEstimate, FuelType,
+                                       LogisticsMeta, RailFreightIntegration,
+                                       RailNetworkType, RoadQuality)
+
 _ROAD_QUALITY_SCORES: Dict[RoadQuality, float] = {RoadQuality.EXCELLENT: 1.0, RoadQuality.GOOD: 0.85, RoadQuality.AVERAGE: 0.65, RoadQuality.POOR: 0.4, RoadQuality.UNPAVED: 0.15}
 _FLEET_MAINTENANCE_OVERHEAD: Dict[RoadQuality, float] = {RoadQuality.EXCELLENT: 0.0, RoadQuality.GOOD: 12.0, RoadQuality.AVERAGE: 28.0, RoadQuality.POOR: 52.0, RoadQuality.UNPAVED: 85.0}
 _ROAD_WEAR_FACTORS: Dict[RoadQuality, List[str]] = {RoadQuality.EXCELLENT: ['Standard tire rotation schedule', 'Minimal suspension stress'], RoadQuality.GOOD: ['Accelerated tire wear from minor surface irregularities', 'Moderate brake pad usage from occasional speed changes'], RoadQuality.AVERAGE: ['Frequent tire replacement due to road surface degradation', 'Suspension component fatigue from uneven surfaces', 'Increased fuel filter replacement frequency'], RoadQuality.POOR: ['Severe tire damage from potholes and loose gravel', 'Accelerated suspension and chassis wear', 'Frequent undercarriage repairs from road debris', 'Higher engine load from low-gear driving on degraded roads', 'Increased risk of cargo damage during transit'], RoadQuality.UNPAVED: ['Extreme tire consumption on unpaved surfaces', 'Critical suspension failure risk on rough terrain', 'Dust and sand infiltration damaging engine and braking systems', 'Axle and drivetrain overstrain from soft-ground navigation', 'Frequent vehicle downtime for emergency repairs', 'Cargo integrity at high risk without specialized vehicles']}
@@ -84,7 +91,7 @@ class LogisticsService:
         for injection into LLM context or feasibility reports.
         """
         analysis = self.analyze(land)
-        raw = land.get('logistics_meta', {})
+        land.get('logistics_meta', {})
         land_id = land['Land_ID']
         region = f"{land['Governorate']} - {land['Region_City']}"
         lines = [f'LOGISTICS & FREIGHT ANALYSIS -- {land_id} ({region})', '=' * 55, f'Composite Accessibility Score: {analysis.accessibility_score:.1f}/100', '', 'TRANSPORTATION ACCESS:']
@@ -112,7 +119,7 @@ class LogisticsService:
             lines.append(f'  Maintenance Overhead:    +{fm.maintenance_overhead_pct:.0f}% vs Excellent baseline')
             if fm.estimated_annual_maintenance_egp is not None:
                 lines.append(f'  Est. Annual Maintenance:  {fm.estimated_annual_maintenance_egp:,.0f} EGP ({_REFERENCE_FLEET_SIZE}-truck fleet)')
-            lines.append(f'  Key Wear Factors:')
+            lines.append('  Key Wear Factors:')
             for factor in fm.wear_factors:
                 lines.append(f'    - {factor}')
         else:
@@ -186,7 +193,7 @@ class LogisticsService:
         Rail, and Air Freight analysis in a compact tabular format.
         """
         analysis = self.analyze(land)
-        raw = land.get('logistics_meta', {})
+        land.get('logistics_meta', {})
         land_id = land['Land_ID']
         region = f"{land['Governorate']} - {land['Region_City']}"
         usage = land.get('Allowed_Usage', '')
@@ -469,7 +476,7 @@ class LogisticsService:
             if af.airport_tier == CargoAirportTier.TIER_1_MAJOR:
                 highlights.append(f'Tier-1 cargo airport: {af.nearest_cargo_airport}')
             if af.trucking_transit_hours <= 1.0:
-                highlights.append(f'Under 1h to cargo airport')
+                highlights.append('Under 1h to cargo airport')
         if analysis.container_handling_nearby:
             highlights.append('Container terminal nearby')
         if analysis.cold_chain_available:

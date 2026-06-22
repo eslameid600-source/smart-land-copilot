@@ -1,6 +1,6 @@
 # Config package
 
-from config.settings import settings, Settings
+from config.settings import Settings, settings
 
 __all__ = ['settings', 'Settings']
 

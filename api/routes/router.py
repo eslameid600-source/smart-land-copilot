@@ -20,14 +20,14 @@ Smart Land Management Copilot — Intelligent LLM Router
   LLM_HEALTH_CHECK    — فحص صحة دوري بالثواني (الافتراضي: 60, 0=معطّل)
 """
 
-import os
-import time
-import logging
-import threading
 import json
-from typing import Generator, Optional, List, Dict, Any, Callable
-from dataclasses import dataclass, field
+import logging
+import os
+import threading
+import time
+from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Dict, Generator, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -231,7 +231,7 @@ class LLMRouter:
     def _init_ollama(self, auto_start: bool):
         """تهيئة خدمة Ollama (كسول)."""
         try:
-            from core.ai.llm.ollama_service import LocalLLMService, OllamaInstaller
+            from core.ai.llm.ollama_service import LocalLLMService
             self._ollama_service = LocalLLMService(auto_start=auto_start)
 
             if self._ollama_service.is_available:
@@ -448,9 +448,9 @@ class LLMRouter:
 
     def _stream_glm(self, mode: str, **kwargs) -> Generator[str, None, None]:
         """التدفق من GLM API."""
+        from core.ai.llm.glm_client import stream_advisory_report as glm_stream_advisory
         from core.ai.llm.glm_client import (
             stream_matchmaking_api as glm_stream_matchmaking,
-            stream_advisory_report as glm_stream_advisory,
         )
 
         if mode == "chat":
@@ -507,10 +507,10 @@ class LLMRouter:
     def _stream_mock(self, mode: str, **kwargs) -> Generator[str, None, None]:
         """التدفق من الردود التجريبية."""
         from core.ai.llm.glm_client import (
-            _mock_response,
-            _mock_matchmaking_response,
-            _mock_advisory_report,
             _chunk_text,
+            _mock_advisory_report,
+            _mock_matchmaking_response,
+            _mock_response,
         )
 
         if mode == "chat":

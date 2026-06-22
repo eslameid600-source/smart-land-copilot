@@ -1,1 +1,1 @@
-# UI package
+"""ui — facade package for Streamlit views."""

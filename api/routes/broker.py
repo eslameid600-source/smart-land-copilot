@@ -11,12 +11,14 @@
 """
 
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.database.database import get_db
-from core.account.broker_service import BrokerService
 from core.account.broker_repository import BrokerRepository
+from core.account.broker_service import BrokerService
+from infrastructure.database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -168,8 +170,8 @@ async def get_broker_earnings(
 async def assign_broker_to_land(
     land_id: str,
     broker_id: str,
-    commission_percent: float = None,
-    requesting_user_id: str = None,
+    commission_percent: Optional[float] = None,
+    requesting_user_id: Optional[str] = None,
     service: BrokerService = Depends(get_broker_service),
 ):
     """

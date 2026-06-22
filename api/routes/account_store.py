@@ -21,13 +21,13 @@ Smart Land Management Copilot — Account Data Layer
     result = transfer_ownership(land_id="EG-CAI-01", buyer_id="inv-001")
 """
 
-import os
-import uuid
 import logging
-import threading
+import os
 import sys
+import threading
+import uuid
 from datetime import datetime, timezone
-from typing import Optional, List, Dict, Any, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -577,7 +577,7 @@ class LandownerStore:
                 raise ValueError(f"مالك الأرض {user_id} غير موجود")
 
             # منع التكرار
-            existing_ids = {l["land_id"] for l in self._owned_lands.get(user_id, [])}
+            existing_ids = {land_item["land_id"] for land_item in self._owned_lands.get(user_id, [])}
             if land_id in existing_ids:
                 raise ValueError(f"الأرض {land_id} مسجلة مسبقاً لدى هذا المالك")
 
@@ -617,8 +617,8 @@ class LandownerStore:
         with self._lock:
             lands = self._owned_lands.get(user_id, [])
             if status:
-                lands = [l for l in lands if l.get("investment_status") == status]
-            return [dict(l) for l in lands[-limit:]]
+                lands = [land_item for land_item in lands if land_item.get("investment_status") == status]
+            return [dict(land_item) for land_item in lands[-limit:]]
 
     def get_land_by_id(self, user_id: str, land_id: str) -> Optional[Dict[str, Any]]:
         """استرجاع أرض محددة لمالك محدد."""
@@ -638,7 +638,7 @@ class LandownerStore:
             lands = self._owned_lands.get(user_id, [])
             original_len = len(lands)
             self._owned_lands[user_id] = [
-                l for l in lands if l["land_id"] != land_id
+                land_item for land_item in lands if land_item["land_id"] != land_id
             ]
             removed = len(self._owned_lands[user_id]) < original_len
 
@@ -732,7 +732,7 @@ class LandownerStore:
             # إزالة من البائع
             seller_lands = self._owned_lands.get(seller_id, [])
             self._owned_lands[seller_id] = [
-                l for l in seller_lands if l["land_id"] != land_id
+                land_item for land_item in seller_lands if land_item["land_id"] != land_id
             ]
 
             seller = self._landowners.get(seller_id)

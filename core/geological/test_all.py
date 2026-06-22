@@ -2,9 +2,9 @@
 Smart Land Management Copilot — Tests
 =======================================
 """
-import pytest
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 class TestLandDatabase:
@@ -15,7 +15,7 @@ class TestLandDatabase:
         lands = get_all_lands()
         assert isinstance(lands, list)
         assert len(lands) == 10
-        assert all(('Land_ID' in l for l in lands))
+        assert all(('Land_ID' in land for land in lands))
 
     def test_get_land_by_id(self):
         from data.land_database import get_land_by_id
@@ -55,7 +55,7 @@ class TestLandDatabase:
         from data.land_database import get_auction_lands
         auctions = get_auction_lands()
         assert len(auctions) > 0
-        assert all((l['Investment_Status'] == 'Public Auction' for l in auctions))
+        assert all((land['Investment_Status'] == 'Public Auction' for land in auctions))
 
 class TestRAGService:
     """Tests for the RAG search engine."""
@@ -101,7 +101,7 @@ class TestRAGService:
         assert results[0]['Compatibility_Percent'] >= results[-1]['Compatibility_Percent']
 
     def test_format_context(self):
-        from rag.search_engine import search_lands, format_context_for_llm
+        from rag.search_engine import format_context_for_llm, search_lands
         results = search_lands('residential in Cairo')
         context = format_context_for_llm(results)
         assert 'RETRIEVED LAND RECORDS' in context
@@ -110,7 +110,7 @@ class TestRAGService:
     def test_filter_by_usage(self):
         from rag.search_engine import filter_lands_by_usage
         industrial = filter_lands_by_usage('Industrial')
-        assert all((l['Allowed_Usage'] == 'Industrial' for l in industrial))
+        assert all((land['Allowed_Usage'] == 'Industrial' for land in industrial))
         all_lands = filter_lands_by_usage('All')
         assert len(all_lands) == 10
 
@@ -118,8 +118,9 @@ class TestFinancialService:
     """Tests for the financial analysis service."""
 
     def test_compute_full_analysis(self):
-        from services.financial_service import FinancialService
         from data.land_database import get_land_by_id
+
+        from services.financial_service import FinancialService
         land = get_land_by_id('EG-CAI-01')
         analysis = FinancialService.compute_full_analysis(land, investment_horizon=5)
         assert analysis.land_id == 'EG-CAI-01'
@@ -128,24 +129,27 @@ class TestFinancialService:
         assert analysis.taxes.registration_fee_egp > 0
 
     def test_different_usages(self):
-        from services.financial_service import FinancialService
         from data.land_database import get_all_lands
+
+        from services.financial_service import FinancialService
         for land in get_all_lands():
             analysis = FinancialService.compute_full_analysis(land, investment_horizon=3)
             assert analysis.roi_pct is not None
             assert analysis.total_investment_egp > 0
 
     def test_tax_calculation(self):
-        from services.financial_service import FinancialService
         from data.land_database import get_land_by_id
+
+        from services.financial_service import FinancialService
         land = get_land_by_id('EG-CAI-01')
         analysis = FinancialService.compute_full_analysis(land)
         expected_reg = land['Total_Area_Sqm'] * land['Price_Per_Sqm_EGP'] * 0.03
         assert abs(analysis.taxes.registration_fee_egp - expected_reg) < 1
 
     def test_payback_period(self):
-        from services.financial_service import FinancialService
         from data.land_database import get_land_by_id
+
+        from services.financial_service import FinancialService
         land = get_land_by_id('EG-CAI-02')
         analysis = FinancialService.compute_full_analysis(land, investment_horizon=10)
         assert analysis.payback_years > 0
@@ -154,8 +158,9 @@ class TestPredictionService:
     """Tests for the price prediction service."""
 
     def test_predict_single(self):
-        from services.prediction_service import PredictionService
         from data.land_database import get_land_by_id
+
+        from services.prediction_service import PredictionService
         land = get_land_by_id('EG-CAI-02')
         pred = PredictionService().predict(land, horizon_months=12)
         assert pred.predicted_price_per_sqm > 0
@@ -163,23 +168,26 @@ class TestPredictionService:
         assert len(pred.key_drivers) > 0
 
     def test_predict_all(self):
-        from services.prediction_service import PredictionService
         from data.land_database import get_all_lands
+
+        from services.prediction_service import PredictionService
         preds = PredictionService().predict_all(get_all_lands())
         assert len(preds) == 10
         assert all((p.predicted_price_per_sqm > 0 for p in preds))
 
     def test_heatmap_data(self):
-        from services.prediction_service import PredictionService
         from data.land_database import get_all_lands
+
+        from services.prediction_service import PredictionService
         heatmap = PredictionService().generate_heatmap_data(get_all_lands())
         assert len(heatmap) == 10
         assert all(('lat' in h and 'intensity' in h for h in heatmap))
 
     def test_rising_fast_land(self):
         """Lands with 'Rising Fast' trend should have higher predictions."""
-        from services.prediction_service import PredictionService
         from data.land_database import get_land_by_id
+
+        from services.prediction_service import PredictionService
         land = get_land_by_id('EG-CAI-02')
         pred = PredictionService().predict(land)
         assert pred.predicted_change_pct > 0
@@ -188,16 +196,18 @@ class TestRecommendationEngine:
     """Tests for the recommendation engine."""
 
     def test_generate_recommendations(self):
-        from services.recommendation_service import RecommendationEngine
         from data.land_database import get_all_lands
+
+        from services.recommendation_service import RecommendationEngine
         recs = RecommendationEngine().generate_recommendations(get_all_lands())
         assert len(recs) > 0
         assert recs[0]['action_score'] >= recs[-1]['action_score']
         assert all(('urgency' in r for r in recs))
 
     def test_urgency_levels(self):
-        from services.recommendation_service import RecommendationEngine
         from data.land_database import get_all_lands
+
+        from services.recommendation_service import RecommendationEngine
         recs = RecommendationEngine().generate_recommendations(get_all_lands())
         urgencies = {r['urgency'] for r in recs}
         assert len(urgencies) > 0
@@ -248,8 +258,9 @@ class TestFeasibilityService:
     """Tests for the feasibility report generator."""
 
     def test_generate_report(self):
-        from services.feasibility_service import FeasibilityReportService
         from data.land_database import get_land_by_id
+
+        from services.feasibility_service import FeasibilityReportService
         land = get_land_by_id('EG-SUE-01')
         report = FeasibilityReportService().generate_report(land)
         assert report['land_id'] == 'EG-SUE-01'
@@ -258,8 +269,9 @@ class TestFeasibilityService:
         assert len(report['timeline']) >= 4
 
     def test_comparison_report(self):
-        from services.feasibility_service import FeasibilityReportService
         from data.land_database import get_all_lands
+
+        from services.feasibility_service import FeasibilityReportService
         report = FeasibilityReportService().generate_comparison_report(get_all_lands()[:3])
         assert report['top_pick'] is not None
         assert len(report['comparison_table']) == 3
@@ -294,8 +306,8 @@ class TestPydanticModels:
     """Tests for Pydantic domain models."""
 
     def test_land_record(self):
-        from models.models.land import LandRecord
         from data.land_database import get_land_by_id
+        from models.models.land import LandRecord
         raw = get_land_by_id('EG-CAI-01')
         record = LandRecord.from_raw_dict(raw)
         assert record.land_id == 'EG-CAI-01'
@@ -307,7 +319,7 @@ class TestPydanticModels:
         assert 'Industrial' in criteria.to_summary_text()
 
     def test_financial_analysis_model(self):
-        from models.models.financial import FinancialAnalysis, CashFlowEntry
+        from models.models.financial import CashFlowEntry
         cf = CashFlowEntry(year=0, net_cash_flow=-100000, cumulative_cash_flow=-100000)
         assert cf.year == 0
 
@@ -359,9 +371,10 @@ class TestDensityService:
 
     def test_analyze_new_cairo(self):
         """EG-CAI-01 (New Cairo) should show HIGH retail saturation."""
-        from services.density_service import DensityService
         from data.land_database import get_land_by_id
         from models.models.land import SaturationLevel
+
+        from services.density_service import DensityService
         land = get_land_by_id('EG-CAI-01')
         result = DensityService().analyze(land)
         assert result.retail_entertainment_saturation in (SaturationLevel.HIGH, SaturationLevel.CRITICAL)
@@ -373,9 +386,10 @@ class TestDensityService:
 
     def test_analyze_toshka(self):
         """EG-ASW-01 (Toshka) should show LOW saturation across all categories."""
-        from services.density_service import DensityService
         from data.land_database import get_land_by_id
         from models.models.land import SaturationLevel
+
+        from services.density_service import DensityService
         land = get_land_by_id('EG-ASW-01')
         result = DensityService().analyze(land)
         assert result.retail_entertainment_saturation == SaturationLevel.LOW
@@ -385,9 +399,10 @@ class TestDensityService:
 
     def test_analyze_10th_of_ramadan(self):
         """EG-SHQ-01 (10th of Ramadan) should show HIGH/CRITICAL industrial saturation."""
-        from services.density_service import DensityService
         from data.land_database import get_land_by_id
         from models.models.land import SaturationLevel
+
+        from services.density_service import DensityService
         land = get_land_by_id('EG-SHQ-01')
         result = DensityService().analyze(land)
         assert result.industrial_infrastructure_saturation in (SaturationLevel.HIGH, SaturationLevel.CRITICAL)
@@ -395,8 +410,9 @@ class TestDensityService:
 
     def test_gap_analysis_saturated_retail(self):
         """A land with HIGH retail saturation should generate gap recommendations."""
-        from services.density_service import DensityService
         from models.models.land import SaturationLevel
+
+        from services.density_service import DensityService
         land = {'Land_ID': 'TEST-DENSITY', 'Allowed_Usage': 'Industrial', 'Service_Density_Clusters': [{'radius_km': 5, 'retail': 15, 'civic': 2, 'industrial': 1}]}
         result = DensityService().analyze(land)
         assert result.retail_entertainment_saturation == SaturationLevel.CRITICAL
@@ -406,8 +422,9 @@ class TestDensityService:
 
     def test_generate_saturation_report(self):
         """Saturation report should be a non-empty string with key sections."""
-        from services.density_service import DensityService
         from data.land_database import get_land_by_id
+
+        from services.density_service import DensityService
         land = get_land_by_id('EG-CAI-01')
         report = DensityService().generate_saturation_report(land)
         assert 'MARKET SATURATION & GAP REPORT' in report
@@ -418,8 +435,9 @@ class TestDensityService:
 
     def test_format_density_for_llm(self):
         """LLM format should be compact and include key metrics."""
-        from services.density_service import DensityService
         from data.land_database import get_land_by_id
+
+        from services.density_service import DensityService
         land = get_land_by_id('EG-CAI-01')
         formatted = DensityService().format_density_for_llm(land)
         assert 'Service Density' in formatted
@@ -428,8 +446,9 @@ class TestDensityService:
 
     def test_analyze_no_density_data(self):
         """Land without density data should return safe defaults."""
-        from services.density_service import DensityService
         from models.models.land import SaturationLevel
+
+        from services.density_service import DensityService
         land = {'Land_ID': 'TEST-EMPTY', 'Allowed_Usage': 'Residential'}
         result = DensityService().analyze(land)
         assert result.overall_density_score == 0.0
@@ -438,8 +457,9 @@ class TestDensityService:
 
     def test_analyze_all(self):
         """analyze_all should return results for all 10 lands."""
-        from services.density_service import DensityService
         from data.land_database import get_all_lands
+
+        from services.density_service import DensityService
         results = DensityService().analyze_all(get_all_lands())
         assert len(results) == 10
         assert 'EG-CAI-01' in results
@@ -447,7 +467,7 @@ class TestDensityService:
 
     def test_density_in_rag_context(self):
         """Density data should appear in RAG LLM context output."""
-        from rag.search_engine import search_lands, format_context_for_llm
+        from rag.search_engine import format_context_for_llm, search_lands
         results = search_lands('residential in Cairo')
         context = format_context_for_llm(results)
         assert 'Service Density' in context
@@ -462,8 +482,9 @@ class TestDensityService:
 
     def test_density_in_recommendations(self):
         """Recommendations should include density-related scoring fields."""
-        from services.recommendation_service import RecommendationEngine
         from data.land_database import get_all_lands
+
+        from services.recommendation_service import RecommendationEngine
         recs = RecommendationEngine().generate_recommendations(get_all_lands())
         assert len(recs) > 0
         assert 'density_score' in recs[0]
@@ -472,8 +493,9 @@ class TestDensityService:
 
     def test_density_in_feasibility_report(self):
         """Feasibility report should include saturation report section."""
-        from services.feasibility_service import FeasibilityReportService
         from data.land_database import get_land_by_id
+
+        from services.feasibility_service import FeasibilityReportService
         land = get_land_by_id('EG-SUE-01')
         report = FeasibilityReportService().generate_report(land)
         assert 'saturation_report' in report
@@ -482,8 +504,9 @@ class TestDensityService:
 
     def test_density_in_prediction(self):
         """Prediction service should factor density into its calculation."""
-        from services.prediction_service import PredictionService
         from data.land_database import get_land_by_id
+
+        from services.prediction_service import PredictionService
         land = get_land_by_id('EG-CAI-01')
         pred = PredictionService().predict(land)
         has_density_driver = any(('cluster' in d.lower() for d in pred.key_drivers))
@@ -491,8 +514,9 @@ class TestDensityService:
 
     def test_profile_totals(self):
         """Each RadiusProfile total should equal sum of categories."""
-        from services.density_service import DensityService
         from data.land_database import get_all_lands
+
+        from services.density_service import DensityService
         results = DensityService().analyze_all(get_all_lands())
         for land_id, analysis in results.items():
             for profile in analysis.profiles:
@@ -504,8 +528,9 @@ class TestLogisticsService:
 
     def test_analyze_sokhna(self):
         """EG-SUE-01 (Sokhna) should have the highest logistics score."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-SUE-01')
         result = LogisticsService().analyze(land)
         assert result.accessibility_score > 70
@@ -515,8 +540,9 @@ class TestLogisticsService:
 
     def test_analyze_toshka(self):
         """EG-ASW-01 (Toshka) should have a very low logistics score."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-ASW-01')
         result = LogisticsService().analyze(land)
         assert result.accessibility_score < 20
@@ -525,8 +551,9 @@ class TestLogisticsService:
 
     def test_analyze_alexandria(self):
         """EG-ALX-01 (Borg El Arab) should have excellent port proximity."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-ALX-01')
         result = LogisticsService().analyze(land)
         assert result.accessibility_score > 60
@@ -535,8 +562,9 @@ class TestLogisticsService:
 
     def test_analyze_no_logistics_data(self):
         """Land without logistics_meta should return minimal score (road quality default only)."""
-        from services.logistics_service import LogisticsService
         from models.models.land import RoadQuality
+
+        from services.logistics_service import LogisticsService
         land = {'Land_ID': 'TEST-NO-LOG', 'Allowed_Usage': 'Logistics'}
         result = LogisticsService().analyze(land)
         assert result.accessibility_score < 20
@@ -545,8 +573,9 @@ class TestLogisticsService:
 
     def test_generate_logistics_report(self):
         """Report should contain key sections."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-SUE-01')
         report = LogisticsService().generate_logistics_report(land)
         assert 'LOGISTICS & FREIGHT ANALYSIS' in report
@@ -557,8 +586,9 @@ class TestLogisticsService:
 
     def test_format_logistics_for_llm(self):
         """LLM format should be compact."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-SHQ-01')
         formatted = LogisticsService().format_logistics_for_llm(land)
         assert 'Logistics Score:' in formatted
@@ -566,8 +596,9 @@ class TestLogisticsService:
 
     def test_rank_for_logistics(self):
         """Sokhna should rank #1 for logistics suitability."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_all_lands
+
+        from services.logistics_service import LogisticsService
         ranked = LogisticsService().rank_for_logistics(get_all_lands(), top_k=3)
         assert ranked[0]['land_id'] == 'EG-SUE-01'
         assert ranked[0]['accessibility_score'] >= ranked[1]['accessibility_score']
@@ -583,15 +614,16 @@ class TestLogisticsService:
 
     def test_logistics_in_rag_context(self):
         """Logistics data should appear in RAG LLM context."""
-        from rag.search_engine import search_lands, format_context_for_llm
+        from rag.search_engine import format_context_for_llm, search_lands
         results = search_lands('logistics land near port')
         context = format_context_for_llm(results)
         assert 'Logistics:' in context
 
     def test_logistics_in_feasibility_report(self):
         """Feasibility report should include logistics section."""
-        from services.feasibility_service import FeasibilityReportService
         from data.land_database import get_land_by_id
+
+        from services.feasibility_service import FeasibilityReportService
         land = get_land_by_id('EG-SUE-01')
         report = FeasibilityReportService().generate_report(land)
         assert 'logistics_report' in report
@@ -600,23 +632,26 @@ class TestLogisticsService:
 
     def test_analyze_all(self):
         """analyze_all should return results for all 10 lands."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_all_lands
+
+        from services.logistics_service import LogisticsService
         results = LogisticsService().analyze_all(get_all_lands())
         assert len(results) == 10
 
     def test_fuel_cost_annual_estimate(self):
         """Report should include annual fuel cost estimate (250 trips)."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-MNF-01')
         report = LogisticsService().generate_logistics_report(land)
         assert 'Annual Fuel Cost' in report
 
     def test_fleet_maintenance_excellent_roads(self):
         """Excellent roads should yield 0% maintenance overhead."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-SUE-01')
         result = LogisticsService().analyze(land)
         assert result.fleet_maintenance is not None
@@ -628,8 +663,9 @@ class TestLogisticsService:
 
     def test_fleet_maintenance_poor_roads(self):
         """Poor roads should yield >=50% maintenance overhead."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-ASW-01')
         result = LogisticsService().analyze(land)
         assert result.fleet_maintenance is not None
@@ -639,17 +675,19 @@ class TestLogisticsService:
 
     def test_fleet_maintenance_cost_scales_with_fleet(self):
         """Poor-road annual cost should exceed Excellent-road annual cost."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
+
+        from services.logistics_service import LogisticsService
         sokhna = LogisticsService().analyze(get_land_by_id('EG-SUE-01'))
         toshka = LogisticsService().analyze(get_land_by_id('EG-ASW-01'))
         assert toshka.fleet_maintenance.estimated_annual_maintenance_egp > sokhna.fleet_maintenance.estimated_annual_maintenance_egp
 
     def test_fuel_consumption_diesel(self):
         """Standard land without solar grid should use Diesel fuel type."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
         from models.models.land import FuelType
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-SHQ-01')
         result = LogisticsService().analyze(land)
         assert result.fuel_trip is not None
@@ -662,9 +700,10 @@ class TestLogisticsService:
 
     def test_fuel_consumption_solar_hybrid(self):
         """SCZone with 100MW dedicated power should trigger Solar-assisted Hybrid."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
         from models.models.land import FuelType
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-SUE-01')
         result = LogisticsService().analyze(land)
         assert result.fuel_trip is not None
@@ -673,8 +712,9 @@ class TestLogisticsService:
 
     def test_fuel_per_ton_km_sokhna_vs_toshka(self):
         """Sokhna (5km) should have lower per-ton-km cost than Toshka (250km)."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
+
+        from services.logistics_service import LogisticsService
         sokhna = LogisticsService().analyze(get_land_by_id('EG-SUE-01'))
         toshka = LogisticsService().analyze(get_land_by_id('EG-ASW-01'))
         assert sokhna.fuel_trip.cost_per_ton_km_egp < toshka.fuel_trip.cost_per_ton_km_egp
@@ -682,7 +722,6 @@ class TestLogisticsService:
     def test_fuel_no_port_distance(self):
         """Land without port distance should return empty FuelTripEstimate."""
         from services.logistics_service import LogisticsService
-        from models.models.land import FuelType
         land = {'Land_ID': 'TEST-NO-PORT', 'Allowed_Usage': 'Logistics', 'logistics_meta': {'road_quality': 'Excellent'}}
         result = LogisticsService().analyze(land)
         assert result.fuel_trip is not None
@@ -690,9 +729,10 @@ class TestLogisticsService:
 
     def test_air_freight_sokhna(self):
         """Sokhna should map to Cairo International Airport (Tier-1 Major)."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
         from models.models.land import CargoAirportTier
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-SUE-01')
         result = LogisticsService().analyze(land)
         assert result.air_freight is not None
@@ -705,9 +745,10 @@ class TestLogisticsService:
 
     def test_air_freight_tier2_regional(self):
         """Borg El Arab should map to Borg El Arab Airport (Tier-2 Regional)."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
         from models.models.land import CargoAirportTier
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-ALX-01')
         result = LogisticsService().analyze(land)
         assert result.air_freight is not None
@@ -718,16 +759,18 @@ class TestLogisticsService:
 
     def test_air_freight_transit_time_calculation(self):
         """Transit time should be distance / speed based on road quality."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
+
+        from services.logistics_service import LogisticsService
         alex = LogisticsService().analyze(get_land_by_id('EG-ALX-01'))
         assert 0.2 < alex.air_freight.trucking_transit_hours < 0.5
 
     def test_rail_freight_high_speed_electric(self):
         """Sokhna SCZone should have High-Speed Electric rail."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
         from models.models.land import RailNetworkType
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-SUE-01')
         result = LogisticsService().analyze(land)
         assert result.rail_freight is not None
@@ -740,9 +783,10 @@ class TestLogisticsService:
 
     def test_rail_freight_conventional(self):
         """10th of Ramadan should have Conventional Freight rail."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
         from models.models.land import RailNetworkType
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-SHQ-01')
         result = LogisticsService().analyze(land)
         assert result.rail_freight is not None
@@ -752,9 +796,10 @@ class TestLogisticsService:
 
     def test_rail_freight_no_access(self):
         """Toshka should have no rail freight access."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
         from models.models.land import RailNetworkType
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-ASW-01')
         result = LogisticsService().analyze(land)
         assert result.rail_freight is not None
@@ -764,16 +809,18 @@ class TestLogisticsService:
 
     def test_rail_cost_saving_high_speed_vs_conventional(self):
         """High-Speed Electric rail should show higher savings than Conventional."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
+
+        from services.logistics_service import LogisticsService
         sokhna = LogisticsService().analyze(get_land_by_id('EG-SUE-01'))
         sharqia = LogisticsService().analyze(get_land_by_id('EG-SHQ-01'))
         assert sokhna.rail_freight.estimated_tonnage_cost_saving_pct > sharqia.rail_freight.estimated_tonnage_cost_saving_pct
 
     def test_feasibility_matrix_structure(self):
         """Matrix should contain all four dimension headers."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-SUE-01')
         matrix = LogisticsService().generate_logistics_feasibility_matrix(land)
         assert 'LOGISTICS FEASIBILITY MATRIX' in matrix
@@ -785,8 +832,9 @@ class TestLogisticsService:
 
     def test_feasibility_matrix_contains_metrics(self):
         """Matrix should contain specific metric values."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-SUE-01')
         matrix = LogisticsService().generate_logistics_feasibility_matrix(land)
         assert 'Excellent' in matrix
@@ -797,8 +845,9 @@ class TestLogisticsService:
 
     def test_feasibility_matrix_in_feasibility_report(self):
         """Feasibility report for logistics land should include the matrix."""
-        from services.feasibility_service import FeasibilityReportService
         from data.land_database import get_land_by_id
+
+        from services.feasibility_service import FeasibilityReportService
         land = get_land_by_id('EG-SUE-01')
         report = FeasibilityReportService().generate_report(land)
         assert 'logistics_matrix' in report
@@ -807,15 +856,20 @@ class TestLogisticsService:
 
     def test_feasibility_matrix_not_in_residential(self):
         """Feasibility report for residential land should NOT include matrix."""
-        from services.feasibility_service import FeasibilityReportService
         from data.land_database import get_land_by_id
+
+        from services.feasibility_service import FeasibilityReportService
         land = get_land_by_id('EG-CAI-01')
         report = FeasibilityReportService().generate_report(land)
         assert report['logistics_matrix'] == ''
 
     def test_logistics_matrix_in_rag_context(self):
         """Logistics Feasibility Matrix should appear in RAG context for logistics queries."""
-        from rag.search_engine import search_lands, format_context_for_llm, extract_intent
+        from rag.search_engine import (
+            extract_intent,
+            format_context_for_llm,
+            search_lands,
+        )
         query = 'Find logistics warehouse near port with good rail access'
         intent = extract_intent(query)
         results = search_lands(query)
@@ -824,7 +878,11 @@ class TestLogisticsService:
 
     def test_no_matrix_for_non_logistics_query(self):
         """Non-logistics queries should NOT trigger matrix in context."""
-        from rag.search_engine import search_lands, format_context_for_llm, extract_intent
+        from rag.search_engine import (
+            extract_intent,
+            format_context_for_llm,
+            search_lands,
+        )
         query = 'Find residential land in Cairo'
         intent = extract_intent(query)
         results = search_lands(query)
@@ -850,8 +908,9 @@ class TestLogisticsService:
 
     def test_recommendation_includes_rail_signal(self):
         """Logistics/Industrial lands with rail should mention rail in recommendations."""
-        from services.recommendation_service import RecommendationEngine
         from data.land_database import get_all_lands
+
+        from services.recommendation_service import RecommendationEngine
         recs = RecommendationEngine().generate_recommendations(get_all_lands())
         sokhna_recs = [r for r in recs if r['land_id'] == 'EG-SUE-01']
         assert len(sokhna_recs) > 0
@@ -860,8 +919,9 @@ class TestLogisticsService:
 
     def test_recommendation_includes_maintenance_signal(self):
         """Lands with Excellent roads should mention zero maintenance overhead."""
-        from services.recommendation_service import RecommendationEngine
         from data.land_database import get_all_lands
+
+        from services.recommendation_service import RecommendationEngine
         recs = RecommendationEngine().generate_recommendations(get_all_lands())
         sokhna_recs = [r for r in recs if r['land_id'] == 'EG-SUE-01']
         assert len(sokhna_recs) > 0
@@ -870,8 +930,9 @@ class TestLogisticsService:
 
     def test_logistics_report_includes_new_sections(self):
         """Upgraded report should include all four new sections."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-SUE-01')
         report = LogisticsService().generate_logistics_report(land)
         assert 'FLEET MAINTENANCE' in report
@@ -881,8 +942,9 @@ class TestLogisticsService:
 
     def test_logistics_report_road_quality_toshka(self):
         """Toshka report should show Poor roads with 52% overhead."""
-        from services.logistics_service import LogisticsService
         from data.land_database import get_land_by_id
+
+        from services.logistics_service import LogisticsService
         land = get_land_by_id('EG-ASW-01')
         report = LogisticsService().generate_logistics_report(land)
         assert 'Poor' in report
@@ -890,7 +952,12 @@ class TestLogisticsService:
 
     def test_auction_models_import(self):
         """Verify auction models can be imported."""
-        from models.models.auction import AuctionRecord, AuctionStatus, Bid, BidStatus, TransactionFeeBreakdown, LandLead, LeadStatus, ListingSource
+        from models.models.auction import (
+            AuctionStatus,
+            BidStatus,
+            LeadStatus,
+            ListingSource,
+        )
         assert AuctionStatus.LIVE.value == 'Live'
         assert BidStatus.WINNING.value == 'Winning'
         assert LeadStatus.NOTARY_VERIFIED.value == 'Verified by Notary'
@@ -960,8 +1027,9 @@ class TestLogisticsService:
 
     def test_land_sourcing_workflow(self):
         """Test full scout lead lifecycle: submit -> upload -> verify."""
-        from services.auction_service import LandSourcingService
         from models.models.auction import LeadStatus
+
+        from services.auction_service import LandSourcingService
         svc = LandSourcingService()
         lead = svc.submit_lead(scout_id='S-001', scout_name='Test Scout', governorate='Suez', region_city='Sokhna', estimated_area_sqm=50000, estimated_price_per_sqm_egp=3000, description='Test lead for logistics land')
         assert lead.status.value == 'Submitted'
@@ -1000,7 +1068,7 @@ class TestLogisticsService:
         """Verify scout-sourced lands have correct fields."""
         from data.land_database import get_all_lands
         lands = get_all_lands()
-        scout_lands = [l for l in lands if l.get('listing_source') == 'Scout Sourced']
+        scout_lands = [land for land in lands if land.get('listing_source') == 'Scout Sourced']
         assert len(scout_lands) >= 2
         for land in scout_lands:
             assert land.get('scout_name') is not None
@@ -1020,8 +1088,8 @@ class TestLogisticsService:
 
     def test_rag_fee_breakdown_context(self):
         """Test that fee breakdown is generated for fee queries."""
-        from rag.search_engine import _generate_fee_breakdown_inline
         from data.land_database import get_land_by_id
+        from rag.search_engine import _generate_fee_breakdown_inline
         land = get_land_by_id('EG-CAI-01')
         result = _generate_fee_breakdown_inline(land)
         assert 'FINANCIAL BREAKDOWN TABLE' in result
@@ -1030,8 +1098,8 @@ class TestLogisticsService:
 
     def test_rag_auction_status_context(self):
         """Test auction status inline for auction lands."""
-        from rag.search_engine import _format_auction_status_inline
         from data.land_database import get_land_by_id
+        from rag.search_engine import _format_auction_status_inline
         land = get_land_by_id('EG-CAI-01')
         result = _format_auction_status_inline(land)
         assert result == ''

@@ -4,13 +4,13 @@ Smart Land Management Copilot — Feasibility Report Generator
 Generates structured mini-feasibility reports for land investments.
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, List
 
+from services.density_service import DensityService
 from services.financial_service import FinancialService
+from services.logistics_service import LogisticsService
 from services.prediction_service import PredictionService
 from services.recommendation_service import RecommendationEngine
-from services.density_service import DensityService
-from services.logistics_service import LogisticsService
 
 
 class FeasibilityReportService:
@@ -434,26 +434,26 @@ class FeasibilityReportService:
 
         if financial.recommendation.startswith("STRONG"):
             text = (
-                f"RECOMMENDATION: INVEST in this land. Key factors: "
+                "RECOMMENDATION: INVEST in this land. Key factors: "
                 + "; ".join(signals)
                 + ". This represents a strong investment opportunity "
                 "aligned with Egyptian market dynamics."
             )
         elif financial.recommendation.startswith("BUY"):
             text = (
-                f"RECOMMENDATION: CONSIDER investing. Key factors: "
+                "RECOMMENDATION: CONSIDER investing. Key factors: "
                 + "; ".join(signals)
                 + ". The investment shows merit but monitor risk factors."
             )
         elif financial.recommendation.startswith("HOLD"):
             text = (
-                f"RECOMMENDATION: NEGOTIATE before investing. Key factors: "
+                "RECOMMENDATION: NEGOTIATE before investing. Key factors: "
                 + "; ".join(signals)
                 + ". Consider negotiating a lower purchase price to improve returns."
             )
         else:
             text = (
-                f"RECOMMENDATION: DO NOT INVEST at current pricing. Key factors: "
+                "RECOMMENDATION: DO NOT INVEST at current pricing. Key factors: "
                 + "; ".join(signals)
                 + ". The financial metrics do not support investment at the asking price."
             )

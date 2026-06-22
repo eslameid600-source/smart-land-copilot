@@ -4,8 +4,10 @@ Smart Land Management Copilot — Authentication & Onboarding View
 Multi-role account selection and broker document validation.
 """
 import streamlit as st
-from models.models.user import UserRole, BrokerVerificationStatus, DocumentType
+from models.user import UserRole
+
 from services.user_service import get_user_service
+
 
 def render_auth_view():
     """

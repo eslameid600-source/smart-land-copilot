@@ -27,12 +27,12 @@ import json
 import logging
 import re
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, Generator, List, Optional, Tuple
 
 import requests
 
-from config.settings import get_settings, AppConfig
+from config.settings import AppConfig, get_settings
 
 logger = logging.getLogger(__name__)
 

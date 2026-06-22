@@ -16,13 +16,12 @@ Geospatial and utility metadata scoring calculator for:
    (ألياف ضوئية) for massive data uploads.
 """
 
-import math
 import logging
-from typing import Dict, Optional, List
+import math
+from typing import Dict, List, Optional
 
-from models.land import (
-    GreeneryDensityData, CreatorStudioSuitability, EnvironmentalData,
-)
+from models.land import (CreatorStudioSuitability, EnvironmentalData,
+                         GreeneryDensityData)
 
 logger = logging.getLogger(__name__)
 

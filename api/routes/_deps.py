@@ -4,10 +4,10 @@
 يستخدم النسخة المتزامنة في الذاكرة من microservices/account-service/
 (المسارات تستدعي الدوال بدون await).
 """
+import logging
 import os
 import sys
-import logging
-from typing import Optional, Dict, Any
+from typing import Optional
 
 from fastapi import Request
 
@@ -15,10 +15,10 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from infrastructure.persistence.account_store import (
-    InvestorStore, LandownerStore,
-    init_stores, transfer_ownership,
-    investor_store_global, landowner_store_global, lands_catalog_global,
+from api.routes.account_store import (
+    InvestorStore,
+    LandownerStore,
+    init_stores,
 )
 
 logger = logging.getLogger(__name__)
@@ -52,12 +52,19 @@ def get_stores():
 
 
 async def optional_user(request: Request) -> Optional[str]:
-    """استخراج user_id من JWT header إن وُجد."""
+    """استخراج user_id من JWT header إن وُجد.
+
+    الأمان: JWT_SECRET يجب أن يُضبط عبر متغير البيئة. لو لم يُضبط،
+    تُرجع None بصمت (هذه دالة optional — لا ترفع استثناء).
+    """
     auth = request.headers.get("Authorization", "")
     if auth.startswith("Bearer "):
+        JWT_SECRET = os.getenv("JWT_SECRET")
+        if not JWT_SECRET:
+            logger.warning("JWT_SECRET env var not set — optional_user returns None")
+            return None
         try:
             import jwt
-            JWT_SECRET = os.getenv("JWT_SECRET", "smartland-dev-secret-change-in-production")
             payload = jwt.decode(auth[7:], JWT_SECRET, algorithms=["HS256"], options={"verify_exp": False})
             return payload.get("sub")
         except Exception:

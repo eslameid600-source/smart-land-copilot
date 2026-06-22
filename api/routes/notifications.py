@@ -15,13 +15,12 @@ Endpoints:
 
 from __future__ import annotations
 
+import logging
 import os
 import sys
 import time
-import logging
-from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Depends, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -45,13 +44,20 @@ router = APIRouter(prefix="/api/notifications", tags=["notifications"])
 # ──────────────────────────────────────────────
 
 async def _get_user_id(request: Request) -> str:
-    """استخراج user_id من Bearer token."""
+    """استخراج user_id من Bearer token.
+
+    الأمان: JWT_SECRET يجب أن يُضبط عبر متغير البيئة. لا قيمة افتراضية —
+    لو لم يُضبط، يُرفض الطلب بـ 500 لتجنّب استخدام سر ضعيف في الإنتاج.
+    """
     auth = request.headers.get("Authorization", "")
     if not auth.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing Authorization header")
+    JWT_SECRET = os.getenv("JWT_SECRET")
+    if not JWT_SECRET:
+        logger.error("JWT_SECRET environment variable is not set — refusing to verify token")
+        raise HTTPException(status_code=500, detail="Server misconfiguration: JWT_SECRET not set")
     try:
         import jwt
-        JWT_SECRET = os.getenv("JWT_SECRET", "smartland-dev-secret-change-in-production")
         payload = jwt.decode(auth[7:], JWT_SECRET, algorithms=["HS256"])
         user_id = payload.get("sub")
         if not user_id:
@@ -243,6 +249,7 @@ app.include_router(router)
 async def _startup():
     """إنشاء جداول الإشعارات عند البدء."""
     from sqlalchemy import text
+
     from infrastructure.database import get_engine
 
     _CREATE_NOTIF_TABLES = """

@@ -4,12 +4,13 @@ Smart Land Management Copilot — Broker Delegation Service
 Dual-Broker listing allocation, performance tracking,
 and Winner-Takes-Commission ledger logic.
 """
-import uuid
 import logging
 from datetime import datetime
-from typing import List, Dict, Optional, Tuple
-from models.models.auction import BrokerCommissionRecord
-from models.models.land import BrokerAllocation
+from typing import Dict, List, Optional, Tuple
+
+from models.auction import BrokerCommissionRecord
+from models.land import BrokerAllocation
+
 logger = logging.getLogger(__name__)
 
 class BrokerDelegationService:

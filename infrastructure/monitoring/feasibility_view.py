@@ -5,13 +5,14 @@ Full feasibility study with financials, predictions, risks,
 and AI-generated analysis.
 """
 
-import streamlit as st
 import pandas as pd
+import streamlit as st
 
 from data.land_database import get_all_lands
 from services.feasibility_service import FeasibilityReportService
 from services.glm_service import get_glm_service
-from ui.components import render_section_header, render_metric_card, render_cash_flow_table
+from ui.components import (render_cash_flow_table, render_metric_card,
+                           render_section_header)
 
 
 def render_feasibility_view():
@@ -22,7 +23,7 @@ def render_feasibility_view():
     )
 
     lands = get_all_lands()
-    land_options = {f"{l['Land_ID']} — {l['Region_City']} ({l['Allowed_Usage']})": l for l in lands}
+    land_options = {f"{ld['Land_ID']} — {ld['Region_City']} ({ld['Allowed_Usage']})": ld for ld in lands}
     selected = st.selectbox("Select Land for Feasibility Study", list(land_options.keys()))
     land = land_options[selected]
 

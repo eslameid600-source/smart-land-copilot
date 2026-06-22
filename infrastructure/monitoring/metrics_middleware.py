@@ -25,11 +25,9 @@ Smart Land Management Copilot — Metrics Collection Middleware
     app_info{service, version}
 """
 
-import os
-import time
 import logging
-from typing import Optional, Dict, Any, Callable, List
-from functools import wraps
+import time
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -39,15 +37,8 @@ logger = logging.getLogger(__name__)
 # ──────────────────────────────────────────────────────────────
 
 try:
-    from prometheus_client import (
-        Counter,
-        Histogram,
-        Gauge,
-        Info,
-        generate_latest,
-        CONTENT_TYPE_LATEST,
-        REGISTRY,
-    )
+    from prometheus_client import (CONTENT_TYPE_LATEST, REGISTRY, Counter,
+                                   Gauge, Histogram, Info, generate_latest)
     PROMETHEUS_AVAILABLE = True
 except ImportError:
     PROMETHEUS_AVAILABLE = False
@@ -336,7 +327,6 @@ class MetricsMiddleware:
 
 def scope_cb(scope):
     """رد اتصال لتعيين بيانات إضافية على Sentry scope."""
-    pass
 
 
 # ──────────────────────────────────────────────────────────────
@@ -382,8 +372,8 @@ def setup_metrics(
     })
 
     # 3. إضافة نقطة نهاية /metrics
-    from starlette.routing import Route
     from starlette.responses import Response as StarletteResponse
+    from starlette.routing import Route
 
     async def metrics_endpoint(request):
         """نقطة نهاية Prometheus metrics."""
@@ -401,7 +391,7 @@ def setup_metrics(
     # 4. مقاييس النظام (اختياري)
     if include_system_metrics:
         try:
-            from prometheus_client import ProcessCollector, PlatformCollector
+            from prometheus_client import PlatformCollector, ProcessCollector
             ProcessCollector()
             PlatformCollector()
         except Exception as e:
@@ -627,7 +617,6 @@ def setup_logging_for_loki(
     الاستخدام:
         setup_logging_for_loki("land-service")
     """
-    import json as json_module
 
     class LokiHandler(logging.Handler):
         """Handler يُرسل السجلات لـ Loki عبر HTTP."""

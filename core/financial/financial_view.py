@@ -4,13 +4,19 @@ Smart Land Management Copilot — Financial Analysis View
 Tab showing ROI, IRR, cash flows, and cost breakdowns.
 """
 
-import streamlit as st
-import pandas as pd
+import json
 
-from data.land_database import get_all_lands, get_land_dataframe
+import pandas as pd
+import streamlit as st
+from data.land_database import get_all_lands
+
 from services.financial_service import FinancialService
 from services.glm_service import get_glm_service
-import json
+from ui.components import (
+    render_cash_flow_table,
+    render_metric_card,
+    render_section_header,
+)
 
 
 def _format_financial_context(analysis, land) -> str:
@@ -25,7 +31,6 @@ def _format_financial_context(analysis, land) -> str:
     if analysis:
         context_parts.append(json.dumps(vars(analysis) if not isinstance(analysis, dict) else analysis, default=str, ensure_ascii=False))
     return "\n".join(context_parts)
-from ui.components import render_section_header, render_metric_card, render_cash_flow_table
 
 
 def render_financial_view():
@@ -36,7 +41,7 @@ def render_financial_view():
     )
 
     lands = get_all_lands()
-    land_options = {f"{l['Land_ID']} — {l['Region_City']}": l for l in lands}
+    land_options = {f"{land['Land_ID']} — {land['Region_City']}": land for land in lands}
 
     # ── Land Selection ──
     selected = st.selectbox("Select Land for Analysis", list(land_options.keys()))
@@ -168,6 +173,6 @@ def render_financial_view():
     if st.button("Generate AI Financial Commentary", key="fin_ai_btn"):
         report_text = _format_financial_context(analysis, land)
         glm = get_glm_service()
-        response = st.write_stream(
+        st.write_stream(
             glm.stream_feasibility(report_text, "Provide a detailed financial analysis and investment recommendation.")
         )

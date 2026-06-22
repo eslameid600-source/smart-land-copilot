@@ -10,14 +10,12 @@
 
 import pytest
 import pytest_asyncio
-from datetime import datetime, timezone
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from unittest.mock import AsyncMock, MagicMock
+from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
+                                    create_async_engine)
 
-from core.account.models import Base, Broker, BrokerAssignment, BrokerTransaction, BrokerStatus
 from core.account.broker_repository import BrokerRepository
 from core.account.broker_service import BrokerService
-
+from core.account.models import Base
 
 # ──────────────────────────────────────────
 # إعداد قاعدة بيانات اختبار (SQLite في الذاكرة)

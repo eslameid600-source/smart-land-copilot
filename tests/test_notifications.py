@@ -8,11 +8,9 @@
 
 from __future__ import annotations
 
-import json
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import datetime, timezone
+from unittest.mock import AsyncMock, MagicMock
 
+import pytest
 
 # ══════════════════════════════════════════════
 # 1. اختبار أنواع الأحداث
@@ -33,7 +31,8 @@ class TestEventTypes:
             assert et in EVENT_REGISTRY, f"Missing event type: {et}"
 
     def test_format_message_success(self):
-        from core.notification.event_types import get_event_type, format_message
+        from core.notification.event_types import (format_message,
+                                                   get_event_type)
 
         evt = get_event_type("auction_outbid")
         payload = {
@@ -49,7 +48,8 @@ class TestEventTypes:
         assert "EG-CAI-01" in result
 
     def test_format_message_missing_key(self):
-        from core.notification.event_types import get_event_type, format_message
+        from core.notification.event_types import (format_message,
+                                                   get_event_type)
 
         evt = get_event_type("auction_outbid")
         result = format_message(evt, {"land_name": "اختبار"})
@@ -72,7 +72,8 @@ class TestEventTypes:
         assert survey.priority == 0  # عادي
 
     def test_event_channels(self):
-        from core.notification.event_types import get_event_type, DeliveryChannel
+        from core.notification.event_types import (DeliveryChannel,
+                                                   get_event_type)
 
         price_evt = get_event_type("price_prediction")
         # price_prediction لا يدعم Push ولا WhatsApp
@@ -251,8 +252,9 @@ class TestNotificationService:
 
     @pytest.mark.asyncio
     async def test_mark_as_read(self, mock_session, mock_redis):
-        from core.notification.service import NotificationService
         from unittest.mock import MagicMock
+
+        from core.notification.service import NotificationService
 
         mock_result = MagicMock()
         mock_result.rowcount = 1
@@ -288,6 +290,7 @@ class TestDeliveryChannels:
     def test_email_service_stub(self):
         """Email يعمل في وضع Stub عند عدم تهيئة SMTP."""
         import asyncio
+
         from infrastructure.external.email_service import send_email
 
         result = asyncio.run(
@@ -297,7 +300,8 @@ class TestDeliveryChannels:
         assert result.get("stub") is True
 
     def test_email_html_template(self):
-        from infrastructure.external.email_service import build_notification_email_html
+        from infrastructure.external.email_service import \
+            build_notification_email_html
 
         html = build_notification_email_html(
             title="تم تجاوز مزايدتك",
@@ -312,6 +316,7 @@ class TestDeliveryChannels:
     def test_fcm_stub(self):
         """FCM يعمل في وضع Stub عند عدم تهيئة Firebase."""
         import asyncio
+
         from infrastructure.external.fcm_client import send_fcm_notification
 
         result = asyncio.run(
@@ -357,7 +362,8 @@ class TestEventIntegration:
 
     def test_all_events_format_correctly(self):
         """كل أنواع الأحداث يجب أن تُنسّق بنجاح مع حمولات كاملة."""
-        from core.notification.event_types import EVENT_REGISTRY, format_message
+        from core.notification.event_types import (EVENT_REGISTRY,
+                                                   format_message)
 
         payloads = {
             "auction_outbid": {

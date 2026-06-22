@@ -19,12 +19,11 @@ SOLID Compliance:
 from __future__ import annotations
 
 import logging
-from functools import lru_cache
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
-from models.land import LandRecord, LandSummary, UsageType, InvestmentStatus
+from models.land import InvestmentStatus, LandRecord, LandSummary
 
 logger = logging.getLogger(__name__)
 

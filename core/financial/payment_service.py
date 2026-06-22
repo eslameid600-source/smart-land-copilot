@@ -3,11 +3,30 @@ Smart Land Management Copilot V4.0
 نظام الدفع والمعاملات المالية — كود Python (FastAPI) كامل
 """
 
+import base64
+import hashlib
+import hmac
+import json
+import logging
+import uuid
+from abc import ABC, abstractmethod
+from datetime import datetime, timezone
+from enum import Enum
+from typing import Optional
+
+import httpx
+from pydantic import BaseModel, Field
+from pydantic_settings import BaseSettings
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from infrastructure.database.models import Investor, Land, Landowner, Transaction
+
+logger = logging.getLogger(__name__)
+
 # ============================================================
 # config/payment.py — إعدادات بوابة الدفع
 # ============================================================
-
-from pydantic_settings import BaseSettings
 
 
 class PaymentSettings(BaseSettings):
@@ -45,11 +64,6 @@ payment_settings = PaymentSettings()
 # ============================================================
 # core/payment/models.py — نماذج البيانات
 # ============================================================
-
-from pydantic import BaseModel, Field
-from typing import Literal, Optional
-from datetime import datetime
-from enum import Enum
 
 
 class TransactionStatus(str, Enum):
@@ -100,16 +114,6 @@ class WebhookCallback(BaseModel):
 # ============================================================
 # core/payment/gateway.py — واجهة بوابات الدفع (Strategy Pattern)
 # ============================================================
-
-from abc import ABC, abstractmethod
-import httpx
-import hmac
-import hashlib
-import base64
-import json
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 class PaymentGateway(ABC):
@@ -304,7 +308,7 @@ class PayPalGateway(PaymentGateway):
             )
         resp.raise_for_status()
         data = resp.json()
-        links = {l["rel"]: l["href"] for l in data.get("links", [])}
+        links = {link["rel"]: link["href"] for link in data.get("links", [])}
         return {
             "payment_url": links.get("approve", ""),
             "gateway_ref": data["id"],
@@ -341,21 +345,6 @@ class PayPalGateway(PaymentGateway):
 # ============================================================
 # core/payment/service.py — منطق المعاملات
 # ============================================================
-
-import uuid
-from datetime import datetime, timezone
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-
-from infrastructure.database.models import Land, Transaction, Investor, Landowner
-from core.payment.gateway import FawryGateway, StripeGateway, PayPalGateway
-from core.payment.models import (
-    TransactionStatus,
-    PaymentMethod,
-    PaymentInitRequest,
-    TransactionResponse,
-    WebhookCallback,
-)
 
 GATEWAYS = {
     "fawry": FawryGateway,

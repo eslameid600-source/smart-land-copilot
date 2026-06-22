@@ -2,21 +2,13 @@
 Tests for PaymentService — initiate, confirm, refund, history.
 """
 
-import pytest
 from decimal import Decimal
-from datetime import datetime, timezone
 
-from purchase_module.models import Transaction, Land
-from purchase_module.schemas import (
-    TransactionCreate,
-    TransactionStatus,
-    PaymentMethod,
-)
+import pytest
+from purchase_module.models import Land, Transaction
+from purchase_module.schemas import PaymentMethod, TransactionCreate, TransactionStatus
 from purchase_module.services.payment_service import PaymentService
-from purchase_module.tests.conftest import (
-    BUYER_ID, SELLER_ID, LAND_ID, LAND_ID_2,
-)
-
+from purchase_module.tests.conftest import BUYER_ID, LAND_ID, LAND_ID_2, SELLER_ID
 
 # ══════════════════════════════════════════════
 # INITIATE

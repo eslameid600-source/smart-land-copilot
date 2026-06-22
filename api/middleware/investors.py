@@ -12,20 +12,19 @@ import logging
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from purchase_module.auth import require_role
 from purchase_module.database import get_db
-from purchase_module.auth import get_current_user, require_role
 from purchase_module.schemas import (
+    IncentivePreviewResponse,
     InvestorProfileResponse,
     InvestorWalletResponse,
-    WalletDepositRequest,
     LoyaltyRedeemRequest,
     LoyaltyRedeemResponse,
-    IncentivePreviewResponse,
+    WalletDepositRequest,
 )
-from purchase_module.services.investor_service import InvestorService
 from purchase_module.services.incentive_service import IncentiveService
+from purchase_module.services.investor_service import InvestorService
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 

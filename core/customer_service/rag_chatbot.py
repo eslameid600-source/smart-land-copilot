@@ -18,13 +18,12 @@ No heavy dependencies:
 """
 
 import json
+import logging
 import math
 import os
 import re
-import logging
-import unicodedata
 from collections import Counter
-from typing import List, Dict, Optional, Tuple, Any
+from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 

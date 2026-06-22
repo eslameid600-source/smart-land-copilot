@@ -32,13 +32,10 @@ Free tier:
     - Meta: 1,000 conversations/month free
 """
 
-import json
-import hmac
-import hashlib
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import List, Dict, Optional, Any, Callable
+from typing import Any, Callable, Dict, List, Optional
 
 import requests
 

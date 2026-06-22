@@ -3,7 +3,8 @@ Smart Land Management Copilot — Price Prediction Model
 ========================================================
 """
 
-from typing import Optional, List
+from typing import List
+
 from pydantic import BaseModel, Field
 
 

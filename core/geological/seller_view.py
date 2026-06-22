@@ -5,14 +5,14 @@ Property registration interface (تسجيل أملاك) for Sale, Rent,
 or Portfolio Tracking with transparent Financial Cleared Matrix.
 """
 
-import streamlit as st
 import pandas as pd
+import streamlit as st
+from data.land_database import USAGE_COLORS, get_all_lands
 
-from data.land_database import get_all_lands, USAGE_COLORS
-from services.auction_service import get_auction_engine, CommissionCalculator
-from services.user_service import get_user_service
+from services.auction_service import CommissionCalculator, get_auction_engine
 from services.broker_delegation_service import get_broker_delegation_service
-from ui.components import render_section_header, render_metric_card
+from services.user_service import get_user_service
+from ui.components import render_metric_card, render_section_header
 
 
 def render_seller_view():
@@ -38,8 +38,8 @@ def render_seller_view():
 
     # ── Seller Metrics ──
     owned_ids = current_user.owned_land_ids
-    owned_lands = [l for l in lands if l["Land_ID"] in owned_ids]
-    total_value = sum(l["Total_Area_Sqm"] * l["Price_Per_Sqm_EGP"] for l in owned_lands)
+    owned_lands = [land for land in lands if land["Land_ID"] in owned_ids]
+    total_value = sum(land["Total_Area_Sqm"] * land["Price_Per_Sqm_EGP"] for land in owned_lands)
 
     m1, m2, m3 = st.columns(3)
     with m1:
@@ -75,7 +75,7 @@ def render_seller_view():
             with rc1:
                 sel_land_key = st.selectbox(
                     "Select Land to Register",
-                    [f"{l['Land_ID']} — {l['Region_City']} ({l['Allowed_Usage']})" for l in lands],
+                    [f"{land['Land_ID']} — {land['Region_City']} ({land['Allowed_Usage']})" for land in lands],
                     key="seller_reg_land",
                 )
                 listing_intent = st.selectbox(
@@ -84,12 +84,12 @@ def render_seller_view():
                     key="seller_intent",
                 )
             with rc2:
-                rental_price = st.number_input(
+                st.number_input(
                     "Monthly Rent (EGP, if Rent)",
                     min_value=0, value=0, step=1000,
                     key="seller_rental",
                 )
-                marketing_notes = st.text_area(
+                st.text_area(
                     "Marketing Notes (optional)",
                     key="seller_notes",
                 )
@@ -115,8 +115,8 @@ def render_seller_view():
 
         display_lands = owned_lands if owned_lands else lands
         land_options = {
-            f"{l['Land_ID']} — {l['Region_City']} ({l['Allowed_Usage']}) [{l['Investment_Status']}]": l
-            for l in display_lands
+            f"{ld['Land_ID']} — {ld['Region_City']} ({ld['Allowed_Usage']}) [{ld['Investment_Status']}]": ld
+            for ld in display_lands
         }
         selected_key = st.selectbox("Select Land", list(land_options.keys()), key="seller_fee_land")
         land = land_options[selected_key]
@@ -180,8 +180,8 @@ def render_seller_view():
 
         display_lands = owned_lands if owned_lands else lands
         del_land_options = {
-            f"{l['Land_ID']} — {l['Region_City']}": l["Land_ID"]
-            for l in display_lands
+            f"{land['Land_ID']} — {land['Region_City']}": land["Land_ID"]
+            for land in display_lands
         }
         selected_del_key = st.selectbox("Select Land", list(del_land_options.keys()), key="del_land_sel")
         selected_land_id = del_land_options[selected_del_key]

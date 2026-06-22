@@ -1,0 +1,1 @@
+"""core.landowner — facade."""

@@ -5,12 +5,12 @@ System performance, API health, customer service KPIs,
 and development metrics.
 """
 
-import streamlit as st
 import pandas as pd
+import streamlit as st
 
-from services.metrics_service import get_metrics_service
 from services.customer_service import CustomerServiceSystem
-from ui.components import render_section_header, render_metric_card
+from services.metrics_service import get_metrics_service
+from ui.components import render_metric_card, render_section_header
 
 
 def render_pm_dashboard():
@@ -106,11 +106,11 @@ def render_pm_dashboard():
 
     total_fields = len(lands[0]) if lands else 0
     complete_records = sum(
-        1 for l in lands
-        if all(l.get(k) is not None for k in ["Land_ID", "Governorate", "Latitude", "Longitude", "Price_Per_Sqm_EGP"])
+        1 for land in lands
+        if all(land.get(k) is not None for k in ["Land_ID", "Governorate", "Latitude", "Longitude", "Price_Per_Sqm_EGP"])
     )
-    geo_complete = sum(1 for l in lands if l.get("Bearing_Capacity_kPa"))
-    infra_complete = sum(1 for l in lands if l.get("Electricity_Capacity_MW"))
+    geo_complete = sum(1 for land in lands if land.get("Bearing_Capacity_kPa"))
+    infra_complete = sum(1 for land in lands if land.get("Electricity_Capacity_MW"))
 
     quality_data = {
         "Metric": [

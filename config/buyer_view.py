@@ -5,12 +5,14 @@ Asset tracking portfolio (إدارة أملاك) displaying land pricing trends,
 infrastructure availability, and multi-use classifications.
 """
 
-import streamlit as st
-import pandas as pd
 from typing import Dict
 
-from data.land_database import get_all_lands, USAGE_COLORS
-from ui.components import render_section_header, render_metric_card, render_land_card
+import pandas as pd
+import streamlit as st
+
+from data.land_database import get_all_lands
+from ui.components import (render_land_card, render_metric_card,
+                           render_section_header)
 
 
 def render_buyer_view():
@@ -18,9 +20,9 @@ def render_buyer_view():
     Render the Buyer/Investor dashboard with portfolio tracking,
     watchlist, and infrastructure analysis.
     """
-    from services.user_service import get_user_service
-    from services.environmental_service import get_environmental_service
     from services.auction_service import get_auction_engine
+    from services.environmental_service import get_environmental_service
+    from services.user_service import get_user_service
 
     user_svc = get_user_service()
     env_svc = get_environmental_service()
@@ -133,7 +135,6 @@ def render_buyer_view():
             st.info("No auctions available.")
         else:
             for auction in auctions:
-                total_val = auction.current_highest_bid_egp or auction.base_price_egp
                 status_color = "#27ae60" if auction.status.value == "Live" else "#95a5a6"
                 st.markdown(
                     f"""

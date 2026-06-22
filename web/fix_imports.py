@@ -23,18 +23,17 @@ Usage:
   python fix_imports.py --gen-map        # generate import_map.json only
 """
 
+import argparse
 import ast
 import json
-import os
 import re
-import sys
 import shutil
-import argparse
+import sys
 import textwrap
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Set
 from collections import defaultdict
 from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
 # ══════════════════════════════════════════════════════════════
 # Project Root
@@ -796,7 +795,7 @@ def main():
 
     # ── Summary ──
     print(f"\n{'=' * 72}")
-    print(f"  SUMMARY")
+    print("  SUMMARY")
     print(f"{'=' * 72}")
     print(f"  Files scanned:     {stats['files_scanned']}")
     print(f"  Files clean:       {stats['files_clean']}")
@@ -817,14 +816,14 @@ def main():
             print("\n  [--clean requires --apply]")
             return 1
         print(f"\n{'=' * 72}")
-        print(f"  CLEANUP — Removing old files/dirs")
+        print("  CLEANUP — Removing old files/dirs")
         print(f"{'=' * 72}")
         clean_old_files(apply=True)
 
     # ── Post-apply validation ──
     if args.apply:
         print(f"\n{'=' * 72}")
-        print(f"  POST-APPLY VALIDATION (ast.parse)")
+        print("  POST-APPLY VALIDATION (ast.parse)")
         print(f"{'=' * 72}")
         valid, invalid, errors = validate_all_files()
         print(f"  Valid:   {valid} files")
@@ -839,9 +838,9 @@ def main():
             print("  All files pass ast.parse!")
 
         # Auto-generate import_map.json after apply
-        print(f"\n  Generating import_map.json ...")
+        print("\n  Generating import_map.json ...")
         generate_import_map()
-        print(f"  Done: import_map.json saved.")
+        print("  Done: import_map.json saved.")
 
     print(f"\n{'=' * 72}")
     if not args.apply:

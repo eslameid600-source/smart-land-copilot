@@ -5,15 +5,14 @@ AST-based import rewriter with backup and Windows UTF-8 path handling
 Parses root_reorg_log.txt to create module mapping and rewrites imports across repo
 """
 
-import os
-import sys
 import ast
-import shutil
 import re
-from pathlib import Path
-from typing import Dict, List, Tuple, Set
+import shutil
+import sys
 from datetime import datetime
 from io import StringIO
+from pathlib import Path
+from typing import Dict, List, Tuple
 
 # Ensure UTF-8 handling on Windows
 if sys.platform == 'win32':
@@ -216,7 +215,7 @@ def generate_report(processor: PythonFileProcessor) -> str:
         report.write("\n")
     
     report.write("BACKUP LOCATION:\n")
-    report.write(f"  Backups saved to: .backup_root_py_*\n\n")
+    report.write("  Backups saved to: .backup_root_py_*\n\n")
     
     report.write("="*70 + "\n")
     
@@ -240,7 +239,7 @@ def main():
     mapper = ModuleMapper(str(reorg_log))
     print(f"Loaded {len(mapper.mapping)} module mappings\n")
     
-    print(f"Starting import rewrite process...")
+    print("Starting import rewrite process...")
     print(f"Backup directory: {backup_dir}\n")
     
     processor = PythonFileProcessor(str(root_dir), mapper, str(backup_dir))

@@ -16,16 +16,15 @@ Smart Land Management Copilot — Local Ollama LLM Service
   OLLAMA_AUTO_INSTALL — تثبيت Ollama تلقائياً (الافتراضي: true)
 """
 
-import os
-import sys
 import json
 import logging
+import os
 import platform
+import shutil
 import subprocess
 import time
-import shutil
-from typing import Generator, Optional, List, Dict, Any
 from dataclasses import dataclass, field
+from typing import Any, Dict, Generator, List, Optional
 
 import requests
 
@@ -398,12 +397,12 @@ class LocalLLMService:
         """تحميل البرومبتات من glm_client لضمان التوافق."""
         try:
             from ai.glm_client import (
+                SYSTEM_PROMPT_ADVISORY,
                 SYSTEM_PROMPT_CHAT,
                 SYSTEM_PROMPT_MATCHMAKING,
-                SYSTEM_PROMPT_ADVISORY,
+                build_advisory_report_prompt,
                 build_chat_prompt,
                 build_matchmaking_prompt,
-                build_advisory_report_prompt,
             )
             self._system_prompts = {
                 "chat": SYSTEM_PROMPT_CHAT,
@@ -438,7 +437,7 @@ class LocalLLMService:
                 models = []
                 for m in data.get("models", []):
                     name = m.get("name", "")
-                    size_bytes = m.get("size", 0)
+                    m.get("size", 0)
                     models.append(name)
 
                 return OllamaHealthStatus(

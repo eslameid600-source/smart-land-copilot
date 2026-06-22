@@ -3,16 +3,12 @@ SQLAlchemy async engine, session factory, and Base declarative.
 Uses PostgreSQL in production, SQLite for testing.
 """
 
-from sqlalchemy.ext.asyncio import (
-    create_async_engine,
-    async_sessionmaker,
-    AsyncSession,
-    async_scoped_session,
-)
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import event
-from sqlalchemy.pool import StaticPool
 import os
+
+from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
+                                    create_async_engine)
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.pool import StaticPool
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",

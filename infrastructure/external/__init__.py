@@ -1,1 +1,1 @@
-# External infrastructure package
+"""infrastructure.external — facade."""

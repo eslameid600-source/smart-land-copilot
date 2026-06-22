@@ -11,11 +11,13 @@ Option B: Platform-Managed Funded Campaigns (Paid Promotion)
   Deploys targeted ads across search engines and social networks.
   Seller can delegate budget allocation to assigned verified broker(s).
 """
-import uuid
 import logging
+import uuid
 from datetime import datetime
-from typing import List, Dict, Optional
-from models.models.auction import AdvertisingCampaign, AdChannel, CampaignStatus
+from typing import Dict, List, Optional
+
+from models.models.auction import AdChannel, AdvertisingCampaign, CampaignStatus
+
 logger = logging.getLogger(__name__)
 
 class AdvertisingService:

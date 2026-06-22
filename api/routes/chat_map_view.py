@@ -6,19 +6,21 @@ interactive Folium map (right 60%).
 """
 
 import streamlit as st
+from data.land_database import USAGE_COLORS, get_all_lands
+from rag.search_engine import (
+    extract_intent,
+    filter_lands_by_usage,
+    format_context_for_llm,
+    search_lands,
+)
 from streamlit_folium import st_folium
 
-from rag.search_engine import (
-    search_lands, format_context_for_llm, extract_intent,
-    filter_lands_by_usage,
-)
+from services.auction_service import CommissionCalculator
+from services.customer_service import CustomerServiceSystem
 from services.glm_service import get_glm_service
 from services.map_service import get_map_service
-from services.prediction_service import PredictionService
-from services.customer_service import CustomerServiceSystem
 from services.metrics_service import get_metrics_service
-from services.auction_service import CommissionCalculator
-from data.land_database import get_all_lands, USAGE_COLORS
+from services.prediction_service import PredictionService
 
 
 def render_chat_map_view():
@@ -27,7 +29,7 @@ def render_chat_map_view():
     # ── Initialize services ──
     glm = get_glm_service()
     map_svc = get_map_service()
-    metrics = get_metrics_service()
+    get_metrics_service()
 
     # Initialize chat history and customer service
     if "chat_history" not in st.session_state:
@@ -239,7 +241,10 @@ def render_chat_map_view():
         if "selected_land" in st.session_state:
             land = st.session_state["selected_land"]
             with st.expander(f"Details: {land['Land_ID']}", expanded=True):
-                from ui.components import render_land_card, render_financial_breakdown_table
+                from ui.components import (
+                    render_financial_breakdown_table,
+                    render_land_card,
+                )
                 render_land_card(land)
 
                 # Show transparent Financial Breakdown Table

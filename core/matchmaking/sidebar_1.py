@@ -13,20 +13,13 @@ SOLID: SRP — sidebar rendering only
 from __future__ import annotations
 
 import streamlit as st
-from typing import List, Optional
 
-from services.state_manager import get_state
-from services.analytics_service import get_analytics_service
-from services.matchmaking_service import get_matchmaking_service
-from services.glm_service import get_glm_service
-from services.rag_service import get_rag_service
-from ui.components import (
-    render_metric_card, render_map_legend, render_compatibility_bar,
-    render_auction_card, render_match_card,
-)
-from ui.matchmaking_view import run_matchmaking
-from models.land import ALL_UTILITIES
 from models.investor import InvestorCriteria
+from models.land import ALL_UTILITIES
+from services.analytics_service import get_analytics_service
+from services.state_manager import get_state
+from ui.components import render_map_legend, render_metric_card
+from ui.matchmaking_view import run_matchmaking
 
 
 def render_sidebar() -> None:
@@ -92,7 +85,7 @@ def _render_dashboard_metrics(analytics) -> None:
     st.markdown("**Usage Breakdown**")
     total = max(stats.total_lands, 1)
     for usage, count in sorted(stats.usage_breakdown.items(), key=lambda x: x[1], reverse=True):
-        pct = (count / total) * 100
+        (count / total) * 100
         st.markdown(
             f"<div style='margin:2px 0;font-size:12px;'>"
             f"<b>{usage}</b> <span style='color:#888;'>({count})</span>"

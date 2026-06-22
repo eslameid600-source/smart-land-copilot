@@ -2,17 +2,13 @@
 Tests for LandownerService — profile, earnings, withdrawal, dashboard.
 """
 
-import pytest
 from decimal import Decimal
 
-from purchase_module.models import LandownerProfile, Land
+import pytest
+from purchase_module.models import LandownerProfile
+from purchase_module.schemas import WithdrawalMethod, WithdrawalRequest
 from purchase_module.services.landowner_service import LandownerService
-from purchase_module.schemas import (
-    WithdrawalRequest,
-    WithdrawalMethod,
-)
-from purchase_module.tests.conftest import BUYER_ID, SELLER_ID, LAND_ID
-
+from purchase_module.tests.conftest import SELLER_ID
 
 # ══════════════════════════════════════════════
 # PROFILE
@@ -137,8 +133,8 @@ class TestWithdrawal:
     async def test_withdraw_bank_requires_ref(self, all_fixtures):
         """Bank transfer requires bank_account_ref."""
         db = all_fixtures["db"]
-        svc = LandownerService(db)
-        request = WithdrawalRequest(
+        LandownerService(db)
+        WithdrawalRequest(
             amount_egp=Decimal("1000.00"),
             withdrawal_method=WithdrawalMethod.BANK_TRANSFER,
             # bank_account_ref intentionally omitted

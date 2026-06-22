@@ -11,13 +11,13 @@ Option B: Platform-Managed Funded Campaigns (Paid Promotion)
   Deploy and track paid advertising campaigns across channels.
 """
 
-import streamlit as st
 import pandas as pd
-
+import streamlit as st
 from data.land_database import get_all_lands
-from services.advertising_service import get_advertising_service, AdChannel
-from services.user_service import get_user_service, UserRole
-from ui.components import render_section_header, render_metric_card
+
+from services.advertising_service import AdChannel, get_advertising_service
+from services.user_service import get_user_service
+from ui.components import render_metric_card, render_section_header
 
 
 def render_advertising_view():
@@ -68,8 +68,8 @@ def render_advertising_view():
     with sub_tabs[1]:
         lands = get_all_lands()
         land_options = {
-            f"{l['Land_ID']} — {l['Region_City']} ({l['Allowed_Usage']})": l
-            for l in lands
+            f"{land['Land_ID']} — {land['Region_City']} ({land['Allowed_Usage']})": land
+            for land in lands
         }
 
         st.markdown(

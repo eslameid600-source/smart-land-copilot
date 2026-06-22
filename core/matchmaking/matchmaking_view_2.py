@@ -12,17 +12,15 @@ SOLID: SRP — matchmaking report rendering only
 
 from __future__ import annotations
 
-import streamlit as st
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
-from services.state_manager import get_state
-from services.matchmaking_service import get_matchmaking_service
-from services.glm_service import get_glm_service
-from ui.components import (
-    render_compatibility_bar, render_auction_card,
-    render_match_card, compat_color,
-)
+import streamlit as st
+
 from models.investor import InvestorCriteria
+from services.glm_service import get_glm_service
+from services.matchmaking_service import get_matchmaking_service
+from services.state_manager import get_state
+from ui.components import compat_color, render_auction_card, render_match_card
 
 
 def render_matchmaking_view() -> None:

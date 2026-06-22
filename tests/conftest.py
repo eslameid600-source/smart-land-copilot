@@ -4,18 +4,14 @@ Uses manual drop/recreate per test for reliable SQLite isolation.
 """
 
 import asyncio
-import pytest
-import pytest_asyncio
-from datetime import datetime, timezone
-from decimal import Decimal
 from typing import AsyncGenerator
 
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy import select
+import pytest
+import pytest_asyncio
+from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
+                                    create_async_engine)
 
 from core.account.models import Base
-
 
 # ──────────────────────────────────────────────
 # Event loop

@@ -5,10 +5,11 @@ Computes ROI, IRR, NPV, payback period, and generates
 detailed cash flow projections for Egyptian land investments.
 Includes Egyptian tax and fee calculations.
 """
-import math
-from typing import List, Dict, Optional
-from models.models.financial import FinancialAnalysis, TaxBreakdown, CashFlowEntry
-from models.models.land import LandRecord
+from typing import Dict, List, Optional
+
+from models.models.financial import (CashFlowEntry, FinancialAnalysis,
+                                     TaxBreakdown)
+
 
 class FinancialService:
     """Service for computing full financial analysis of land investments."""

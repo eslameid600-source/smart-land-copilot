@@ -10,20 +10,17 @@
 4. تحديث الحالة والأرصدة في DB
 """
 
-import os
 import json
 import logging
+import os
 from datetime import datetime, timezone
-from typing import Dict, Any
+from typing import Any, Dict
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.financial.base import (
-    PaymentRouter, TransactionStatus,
-)
+from core.financial.base import PaymentRouter, TransactionStatus
+from core.financial.service import TransactionStore, WalletStore
 from payment.models import PaymentTransaction
-from core.financial.service import WalletStore
-from core.financial.service import TransactionStore
 
 logger = logging.getLogger(__name__)
 
@@ -171,7 +168,8 @@ class WebhookHandler:
         loyalty_points = int(paid_amount * self._loyalty_rate)
         if loyalty_points > 0:
             # تحديث نقاط الولاء في جدول المستثمر
-            from sqlalchemy import select, update
+            from sqlalchemy import update
+
             from core.account.models import Investor
             stmt = (
                 update(Investor)

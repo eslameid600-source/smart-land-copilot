@@ -4,13 +4,12 @@ Coordinates between repeat-buyer discounts and loyalty point redemptions.
 """
 
 import logging
-from decimal import Decimal
 from datetime import datetime, timezone
-
-from sqlalchemy.ext.asyncio import AsyncSession
+from decimal import Decimal
 
 from purchase_module.models import InvestorProfile, LoyaltyPointsLog
-from purchase_module.schemas import IncentivePreviewResponse, LoyaltyRedeemResponse
+from purchase_module.schemas import IncentivePreviewResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 

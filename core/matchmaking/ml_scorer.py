@@ -14,8 +14,8 @@ Smart Land Management Copilot — ML-Enhanced Match Scorer
 from __future__ import annotations
 
 import logging
-import os
 import math
+import os
 import random
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
@@ -23,11 +23,7 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 
-from core.domain.land_database import (
-    get_all_lands,
-    ALL_UTILITIES,
-    compute_land_quality_rating,
-)
+from core.domain.land_database import ALL_UTILITIES, get_all_lands
 
 logger = logging.getLogger(__name__)
 
@@ -227,7 +223,7 @@ def generate_training_data(
     for _ in range(n_samples):
         # اختيار أرض عشوائية (مع تحيّز نحو الأراضي الأعلى جودة)
         weights = np.array([
-            _QUALITY_NUMERIC.get(l.get("تصنيف_الجودة", "B"), 1.0) for l in lands
+            _QUALITY_NUMERIC.get(ld.get("تصنيف_الجودة", "B"), 1.0) for ld in lands
         ])
         weights = weights / weights.sum()
         land = lands[np.random.choice(len(lands), p=weights)]
@@ -409,8 +405,8 @@ class MLScoreEngine:
             TrainingReport يحتوي على مقاييس الأداء.
         """
         from sklearn.ensemble import GradientBoostingClassifier
-        from sklearn.model_selection import train_test_split
         from sklearn.metrics import accuracy_score, roc_auc_score
+        from sklearn.model_selection import train_test_split
 
         # تحضير البيانات
         if historical_data is None:
@@ -583,8 +579,9 @@ class MLScoreEngine:
     def _save_model(self, feature_cols: List[str]) -> None:
         """حفظ النموذج وأسماء الميزات إلى القرص."""
         try:
-            import joblib
             import json
+
+            import joblib
 
             os.makedirs(_MODEL_DIR, exist_ok=True)
 
@@ -691,10 +688,9 @@ def investor_smart_match_hybrid(
     تُرجع نفس هيكل MatchResult مع إضافة حقول ml_score و hybrid_score.
     """
     from core.matchmaking.service import (
-        investor_smart_match,
-        compute_compatibility_score,
-        MatchResult,
         _QUALITY_ORDER,
+        MatchResult,
+        compute_compatibility_score,
     )
 
     lands = get_all_lands()
@@ -779,7 +775,6 @@ def train_default_engine(
 # ──────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    import json
 
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 

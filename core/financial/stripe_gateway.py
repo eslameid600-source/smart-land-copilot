@@ -9,7 +9,7 @@ import logging
 from decimal import Decimal
 from typing import Optional
 
-from purchase_module.gateway.base import PaymentGateway, PaymentResult, GatewayError
+from purchase_module.gateway.base import GatewayError, PaymentGateway, PaymentResult
 
 logger = logging.getLogger(__name__)
 

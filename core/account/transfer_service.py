@@ -9,18 +9,20 @@
 
 التزامن: يُدار عبر PostgreSQL row-level locks (SELECT ... FOR UPDATE).
 """
+import logging
 import os
 import uuid
-import logging
 from datetime import datetime, timezone
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from core.account.models import Investor, OwnedLand
+
 from core.account.investor_repository import InvestorCrudMixin
-from core.account.wallet_service import WalletOperationsMixin
-from core.account.transaction_repository import TransactionMixin
 from core.account.landowner_repository import LandownerStore
+from core.account.models import Investor
+from core.account.transaction_repository import TransactionMixin
+from core.account.wallet_service import WalletOperationsMixin
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +32,6 @@ PLATFORM_COMMISSION_PCT = float(os.getenv("PLATFORM_COMMISSION_PCT", "0.5"))
 
 class InvestorStore(InvestorCrudMixin, WalletOperationsMixin, TransactionMixin):
     """InvestorStore المُركَّب — يُستخدم داخل transfer_ownership فقط."""
-    pass
 
 
 async def transfer_ownership(

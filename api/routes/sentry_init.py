@@ -20,11 +20,10 @@ Smart Land Management Copilot — Sentry Integration
   SENTRY_PROFILES_SAMPLE — نسبة أخذ عينات الـ Profiling
 """
 
-import os
 import logging
-import traceback
-from typing import Optional, Dict, Any
+import os
 from functools import wraps
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -66,9 +65,9 @@ def init_sentry(
     try:
         import sentry_sdk
         from sentry_sdk.integrations.fastapi import FastApiIntegration
+        from sentry_sdk.integrations.httpx import HttpxIntegration
         from sentry_sdk.integrations.logging import LoggingIntegration
         from sentry_sdk.integrations.redis import RedisIntegration
-        from sentry_sdk.integrations.httpx import HttpxIntegration
         from sentry_sdk.integrations.requests import RequestsIntegration
     except ImportError:
         logger.warning(

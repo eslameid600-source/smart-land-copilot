@@ -8,17 +8,16 @@ POST /api/landowners/withdraw     — withdraw earnings
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from purchase_module.auth import require_role
 from purchase_module.database import get_db
-from purchase_module.auth import get_current_user, require_role
 from purchase_module.schemas import (
-    LandownerProfileResponse,
     LandownerDashboardResponse,
+    LandownerProfileResponse,
     WithdrawalRequest,
     WithdrawalResponse,
 )
 from purchase_module.services.landowner_service import LandownerService
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 

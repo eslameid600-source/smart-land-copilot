@@ -15,14 +15,12 @@ Smart Land Management Copilot — Agent API Route
   لنمط Agent مع streaming. وإلا يعمل بالوضع العادي (JSON response).
 """
 
+import logging
 import os
 import sys
-import json
-import logging
 from typing import Optional
 
-from fastapi import APIRouter, Request, Depends, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)

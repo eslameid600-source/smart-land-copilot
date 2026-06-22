@@ -17,8 +17,6 @@ import json
 import logging
 import os
 import sys
-import time
-from datetime import datetime, timezone
 from typing import Any, Optional
 
 # ── إعداد المسارات ──
@@ -88,7 +86,8 @@ async def _send_via_whatsapp(
     if not phone:
         return {"channel": "whatsapp", "status": "skipped", "reason": "no_number"}
 
-    from infrastructure.external.customer_service.whatsapp_service import WhatsAppService
+    from infrastructure.external.customer_service.whatsapp_service import \
+        WhatsAppService
     TWILIO_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
     TWILIO_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
     TWILIO_FROM = os.getenv("TWILIO_FROM_NUMBER", "")
@@ -116,8 +115,7 @@ async def _send_via_email(
         return {"channel": "email", "status": "skipped", "reason": "no_email"}
 
     from infrastructure.external.email_service import (
-        send_email, build_notification_email_html,
-    )
+        build_notification_email_html, send_email)
     event_type = data.get("event_type", "")
     html = build_notification_email_html(title, body, event_type)
 
@@ -327,7 +325,7 @@ async def run_listener():
                 payload = json.loads(message["data"])
                 await _process_notification(payload)
             except json.JSONDecodeError:
-                logger.error(f"Invalid JSON in Pub/Sub message")
+                logger.error("Invalid JSON in Pub/Sub message")
             except Exception as e:
                 logger.error(f"Pub/Sub processing error: {e}")
 

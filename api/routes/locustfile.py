@@ -11,10 +11,9 @@ Locust Load Test — نظام الإشعارات
     • Throughput > 500 notifications/second
 """
 
-from locust import HttpUser, task, between, events
-import json
 import random
 
+from locust import HttpUser, between, events, task
 
 # أنواع الأحداث المتاحة
 EVENT_TYPES = [

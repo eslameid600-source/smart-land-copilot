@@ -5,11 +5,10 @@ Tracks and reports system performance, API health, and
 development KPIs for the PM dashboard.
 """
 
-import time
 import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional
 from collections import deque
+from datetime import datetime, timedelta
+from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
 

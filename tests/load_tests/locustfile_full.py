@@ -12,10 +12,10 @@ Locust Load Test — Full System
     • محاكاة سلوك المستخدمين الحقيقيين
 """
 
-from locust import HttpUser, task, between, events, constant
-import json
-import random
 import logging
+import random
+
+from locust import HttpUser, between, constant, events, task
 
 logger = logging.getLogger(__name__)
 
@@ -296,7 +296,7 @@ def on_test_stop(environment, **kwargs):
     total_fail = stats.total.num_failures
     total_rps = stats.total.total_rps
     avg_time = stats.total.avg_response_time
-    p95 = getattr(stats.total, "avg_response_time", None)
+    getattr(stats.total, "avg_response_time", None)
 
     print("\n" + "=" * 70)
     print("  📊 تقرير أداء النظام الشامل — Smart Land Copilot")

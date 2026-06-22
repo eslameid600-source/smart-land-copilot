@@ -8,9 +8,11 @@
     - get_platform_stats(): إحصائيات عامة للمنصة (لوحة التحكم)
 """
 import logging
-from typing import Optional, List, Dict, Any
-from sqlalchemy import select, func
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from core.account.models import Investor, Landowner, WalletTransaction
 
 logger = logging.getLogger(__name__)
@@ -57,8 +59,8 @@ class TransactionMixin:
             investor_id=user_id,
             tx_type=tx_type,
             amount_egp=amount,
-            balance_after_egp=balance,
-            description_ar=description,
+            balance_after=balance,
+            description=description,
             reference_id=reference_id,
         )
         self.session.add(tx)

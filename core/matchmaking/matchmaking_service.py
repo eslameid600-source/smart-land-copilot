@@ -29,13 +29,23 @@ SOLID:
 ============================================================
 """
 from __future__ import annotations
+
 import logging
-from typing import Any, Dict, List, Optional
-from config.settings import get_settings, AppConfig, MatchmakingWeights
-from data.repository import get_repository, LandRepository
+from typing import List, Optional
+
+from data.repository import LandRepository, get_repository
 from models.models.models.investor import InvestorCriteria
 from models.models.models.land import LandRecord
-from models.models.models.matchmaking import MatchResult, MatchmakingReport, ScoreBreakdown, RiskLevel, RecommendationType
+from models.models.models.matchmaking import (
+    MatchmakingReport,
+    MatchResult,
+    RecommendationType,
+    RiskLevel,
+    ScoreBreakdown,
+)
+
+from config.settings import AppConfig, get_settings
+
 logger = logging.getLogger(__name__)
 
 class MatchmakingService:
@@ -88,7 +98,7 @@ class MatchmakingService:
             lines.append(f"\n[Land: {result.land_id}]  Compatibility: {result.compatibility_percent}%\n  Location       : {r.get('Governorate', 'N/A')} - {r.get('Region_City', 'N/A')}\n  Area           : {r.get('Total_Area_Sqm', 'N/A'):,} sqm\n  Price/sqm      : {r.get('Price_Per_Sqm_EGP', 'N/A'):,} EGP\n  Usage          : {r.get('Allowed_Usage', 'N/A')}\n  Risk Level     : {result.investment_risk.value}\n  Recommendation : {result.recommendation.value}\n  Strengths      : {'; '.join(result.strengths) or 'None identified'}\n  Weaknesses     : {'; '.join(result.weaknesses) or 'None identified'}\n")
             if result.is_auction:
                 lines.append(f"  *** AUCTION *** Date: {r.get('Auction_Date', 'N/A')}, Starting: {r.get('Starting_Price_Per_Sqm_EGP', 'N/A'):,} EGP/m2\n")
-            lines.append(f'  Score Breakdown:\n' + '\n'.join((f"    - {sb.category}: {sb.actual_score}/{sb.max_score} ({sb.percentage:.0f}%) {('OK' if sb.passed else 'MISS')} — {sb.detail}" for sb in result.score_breakdown)))
+            lines.append('  Score Breakdown:\n' + '\n'.join((f"    - {sb.category}: {sb.actual_score}/{sb.max_score} ({sb.percentage:.0f}%) {('OK' if sb.passed else 'MISS')} — {sb.detail}" for sb in result.score_breakdown)))
         return '\n'.join(lines)
 
     def _score_land(self, land: LandRecord, criteria: InvestorCriteria) -> MatchResult:

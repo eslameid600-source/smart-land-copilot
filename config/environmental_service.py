@@ -15,10 +15,13 @@ Geospatial and utility metadata scoring calculator for:
    greenery landscape and mandatory Fiber Optic infrastructure
    (ألياف ضوئية) for massive data uploads.
 """
-import math
 import logging
-from typing import Dict, Optional, List
-from models.models.land import GreeneryDensityData, CreatorStudioSuitability, EnvironmentalData
+import math
+from typing import Dict, List, Optional
+
+from models.land import (CreatorStudioSuitability, EnvironmentalData,
+                         GreeneryDensityData)
+
 logger = logging.getLogger(__name__)
 EGYPTIAN_GREEN_SPACES = {'Cairo': {'parks': [{'name': 'Al-Azhar Park', 'lat': 30.0457, 'lon': 31.262, 'area_ha': 30}, {'name': 'Family Park New Cairo', 'lat': 30.016, 'lon': 31.44, 'area_ha': 20}, {'name': 'International Garden', 'lat': 30.058, 'lon': 31.331, 'area_ha': 35}, {'name': 'Orman Botanical Garden', 'lat': 30.0195, 'lon': 31.2092, 'area_ha': 8}, {'name': 'Gabalaya Park', 'lat': 30.053, 'lon': 31.218, 'area_ha': 5}]}, 'Giza': {'parks': [{'name': 'Giza Zoo & Gardens', 'lat': 30.0284, 'lon': 31.2158, 'area_ha': 34}, {'name': 'Fustat Gardens', 'lat': 30.005, 'lon': 31.236, 'area_ha': 12}, {'name': 'Oasis Park 6th October', 'lat': 29.959, 'lon': 30.901, 'area_ha': 15}]}, 'Alexandria': {'parks': [{'name': 'Montaza Palace Gardens', 'lat': 31.2985, 'lon': 30.0193, 'area_ha': 60}, {'name': 'Antoniadis Garden', 'lat': 31.203, 'lon': 29.908, 'area_ha': 40}, {'name': 'Alexandria Zoo', 'lat': 31.2089, 'lon': 29.9103, 'area_ha': 10}]}, 'Suez': {'parks': [{'name': 'Suez Public Park', 'lat': 29.9668, 'lon': 32.5498, 'area_ha': 8}]}, 'Ismailia': {'parks': [{'name': 'Ismailia Green Island', 'lat': 30.592, 'lon': 32.271, 'area_ha': 12}, {'name': 'Ismailia Public Garden', 'lat': 30.595, 'lon': 32.265, 'area_ha': 6}]}}
 

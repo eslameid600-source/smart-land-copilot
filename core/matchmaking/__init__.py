@@ -1,1 +1,1 @@
-# core/matchmaking package
+"""core.matchmaking — facade."""

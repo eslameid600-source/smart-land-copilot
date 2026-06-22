@@ -6,13 +6,9 @@ detailed cash flow projections for Egyptian land investments.
 Includes Egyptian tax and fee calculations.
 """
 
-import math
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
-from models.financial import (
-    FinancialAnalysis, TaxBreakdown, CashFlowEntry,
-)
-from models.land import LandRecord
+from models.financial import CashFlowEntry, FinancialAnalysis, TaxBreakdown
 
 
 class FinancialService:

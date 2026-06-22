@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI, Request
 
-from api.middleware.rate_limit import init_rate_limiting, limiter
+from api.routes.rate_limit import init_rate_limiting, limiter
 
 app = FastAPI(title="Smart Land Copilot API")
 

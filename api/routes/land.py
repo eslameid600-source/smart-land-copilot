@@ -9,11 +9,13 @@
 """
 
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Form
+from typing import Optional
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.database.database import get_db
-from core.domain.verification_service import LandVerificationService
+from core.account.broker_service import LandVerificationService
+from infrastructure.database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +73,8 @@ async def register_gps(
     land_id: str,
     latitude: float,
     longitude: float,
-    accuracy: float = None,
-    altitude: float = None,
+    accuracy: Optional[float] = None,
+    altitude: Optional[float] = None,
     source: str = "manual_entry",
     recorded_by: str = "",
     service: LandVerificationService = Depends(get_verification_service),

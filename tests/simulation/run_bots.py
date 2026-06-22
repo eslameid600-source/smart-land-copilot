@@ -18,20 +18,18 @@ Smart Land Copilot — Bot Simulation Suite
 """
 
 import asyncio
-import json
-import os
+import logging
 import random
 import time
 import uuid
-import logging
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Tuple
-from dataclasses import dataclass, field, asdict
+from typing import Dict, List, Optional
 
 # ─── Try to create Excel report — fallback to CSV if openpyxl not available ───
 try:
     from openpyxl import Workbook
-    from openpyxl.styles import Font, PatternFill, Alignment
+    from openpyxl.styles import Alignment, Font, PatternFill
     HAS_EXCEL = True
 except ImportError:
     HAS_EXCEL = False
@@ -627,7 +625,7 @@ async def run_simulation(config: dict = None):
     logger.info("=" * 60)
 
     start_time = time.time()
-    deadline = start_time + config["simulation_minutes"] * 60
+    start_time + config["simulation_minutes"] * 60
 
     # ─── المرحلة 1: إنشاء بوتات المالكين ───
     logger.info("\n📌 المرحلة 1: نشر الأراضي (مالكون)...")

@@ -3,23 +3,18 @@ Smart Land Management Copilot V4.0
 نقاط نهاية FastAPI — الدفع والمستثمرين وأصحاب الأراضي والحوافز
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel, Field
-from typing import Literal, Optional
+from typing import Literal
 
-from infrastructure.database.connection import get_db
-from core.payment.models import (
-    PaymentInitRequest,
-    TransactionResponse,
-    WebhookCallback,
-    TransactionStatus,
-)
-from core.payment import service as payment_svc
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from core.incentive import service as incentive_svc
 from core.investor import service as investor_svc
 from core.landowner import service as landowner_svc
-from core.incentive import service as incentive_svc
-
+from core.payment import service as payment_svc
+from core.payment.models import PaymentInitRequest, TransactionResponse, WebhookCallback
+from infrastructure.database.connection import get_db
 
 # ============================================================
 # api/routers/payments.py
@@ -42,7 +37,7 @@ async def initiate_payment(
         return await payment_svc.initiate_payment(db, buyer_id, body)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=502, detail="فشل الاتصال ببوابة الدفع")
 
 

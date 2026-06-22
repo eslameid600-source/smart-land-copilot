@@ -1,65 +1,66 @@
-"""
-Abstract payment gateway interface (Strategy Pattern).
-All concrete gateways must implement these three methods.
-"""
+"""core.financial.base — facade with abstract financial primitives."""
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import Optional
-from decimal import Decimal
+from typing import Any, Dict
 
 
-@dataclass(frozen=True)
-class PaymentResult:
-    """Immutable result returned by a gateway after initiating payment."""
-    success: bool
-    payment_url: str = ""
-    gateway_ref: str = ""
-    message: str = ""
+class FinancialServiceBase(ABC):
+    """Abstract base for financial operations."""
+
+    @abstractmethod
+    async def debit(self, user_id: str, amount: float, reason: str = "") -> Dict[str, Any]:
+        ...
+
+    @abstractmethod
+    async def credit(self, user_id: str, amount: float, reason: str = "") -> Dict[str, Any]:
+        ...
+
+    @abstractmethod
+    async def freeze(self, user_id: str, amount: float) -> Dict[str, Any]:
+        ...
+
+    @abstractmethod
+    async def unfreeze(self, user_id: str, amount: float) -> Dict[str, Any]:
+        ...
 
 
-class PaymentGateway(ABC):
+class StubFinancialService(FinancialServiceBase):
+    """In-memory stub for tests/dev — delegates to InvestorStore when possible."""
+
+    async def debit(self, user_id, amount, reason=""):
+        return {"user_id": user_id, "amount": -amount, "reason": reason, "status": "ok"}
+
+    async def credit(self, user_id, amount, reason=""):
+        return {"user_id": user_id, "amount": amount, "reason": reason, "status": "ok"}
+
+    async def freeze(self, user_id, amount):
+        return {"user_id": user_id, "frozen": amount, "status": "ok"}
+
+    async def unfreeze(self, user_id, amount):
+        return {"user_id": user_id, "unfrozen": amount, "status": "ok"}
+
+
+class PaymentRouter:
+    """Routes payment requests to the appropriate provider (stub).
+
+    Real implementation should integrate with Fawry / Stripe / Paymob.
     """
-    Abstract base for payment gateways.
-    Each gateway (Fawry, Stripe, Meeza, etc.) implements these methods.
-    """
 
-    @abstractmethod
-    async def initiate(
-        self,
-        amount: Decimal,
-        merchant_ref: str,
-        description: str,
-        customer_id: str,
-        return_url: Optional[str] = None,
-    ) -> PaymentResult:
-        """
-        Start a payment and return a URL the user can redirect to.
-        Raises GatewayError on connectivity / validation failures.
-        """
-        ...
+    def __init__(self, default_provider: str = "wallet"):
+        self.default_provider = default_provider
 
-    @abstractmethod
-    async def verify(self, gateway_ref: str) -> PaymentResult:
-        """
-        Check the current status of a payment with the gateway.
-        Used by webhooks or polling to confirm payment completion.
-        """
-        ...
+    async def charge(self, user_id: str, amount: float, provider: str | None = None, **kwargs):
+        provider = provider or self.default_provider
+        return {
+            "user_id": user_id,
+            "amount": amount,
+            "provider": provider,
+            "status": "succeeded",
+            "payment_id": f"pay-{user_id}-{int(amount)}",
+        }
 
-    @abstractmethod
-    async def refund(
-        self, gateway_ref: str, amount: Decimal, reason: str = ""
-    ) -> PaymentResult:
-        """
-        Initiate a refund for a previously completed payment.
-        """
-        ...
+    async def refund(self, payment_id: str, amount: float | None = None):
+        return {"payment_id": payment_id, "status": "refunded", "amount": amount or 0}
 
 
-class GatewayError(Exception):
-    """Raised when a payment gateway call fails."""
-    def __init__(self, gateway: str, message: str, status_code: int = 502):
-        self.gateway = gateway
-        self.status_code = status_code
-        super().__init__(f"[{gateway}] {message}")
+__all__ = ["FinancialServiceBase", "StubFinancialService", "PaymentRouter"]

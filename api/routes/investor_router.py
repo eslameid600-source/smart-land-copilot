@@ -14,11 +14,13 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
 
-from core.domain.entities import (
-    InvestorCreateRequest, WalletDepositRequest,
-    LoyaltyRedeemRequest, APIResponse,
-)
 from api.routes._deps import get_investor_store
+from core.domain.entities import (
+    APIResponse,
+    InvestorCreateRequest,
+    LoyaltyRedeemRequest,
+    WalletDepositRequest,
+)
 
 router = APIRouter(prefix="/api/v1", tags=["investors"])
 

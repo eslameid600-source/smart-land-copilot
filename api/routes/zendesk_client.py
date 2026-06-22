@@ -20,12 +20,11 @@ Free tier:
     Trial sandbox: https://{subdomain}.zendesk.com
 """
 
-import json
-import time
 import logging
+import time
 import uuid
 from datetime import datetime, timezone
-from typing import List, Dict, Optional, Any
+from typing import Any, Dict, List, Optional
 
 import requests
 

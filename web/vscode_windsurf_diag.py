@@ -17,20 +17,21 @@ Usage:
 Note: Run on the same machine where VS Code is running. On Windows it inspects %APPDATA%/Code logs and settings.
 """
 from __future__ import print_function
+
 import argparse
 import json
 import os
 import platform
 import re
-import shutil
 import subprocess
 from datetime import datetime
+
 
 def run_cmd(cmd):
     try:
         out = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=False)
         return out.decode('utf-8', errors='replace').strip()
-    except Exception as e:
+    except Exception:
         return None
 
 def get_code_version():
@@ -52,7 +53,7 @@ def list_extensions():
         out = None
     if out is None:
         return None
-    return [l.strip() for l in out.splitlines() if l.strip()]
+    return [line.strip() for line in out.splitlines() if line.strip()]
 
 def find_settings_files():
     paths = []
@@ -273,11 +274,11 @@ def main():
     exts = list_extensions()
     settings_files = find_settings_files()
     settings_data = [load_json(p) for p in settings_files]
-    webview_key, webview_val = None, None
+    webview_key, _webview_val = None, None
     for sd in settings_data:
         if isinstance(sd, dict) and 'workbench.experimental.webViewExternalBrowser' in sd:
             webview_key = 'workbench.experimental.webViewExternalBrowser'
-            webview_val = sd.get(webview_key)
+            sd.get(webview_key)
             break
 
     proxy_env = check_proxy_env()

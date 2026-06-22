@@ -42,14 +42,20 @@ Usage:
     # Record survey
     result = hub.survey_user("TXN-001", rating=5, comment="ممتاز")
 """
-import json
 import logging
-from datetime import datetime, timezone
-from typing import Dict, List, Optional, Any
-from services.customer_service.zendesk_client import ZendeskClient, ZendeskTicket, TicketStatus, TicketPriority, ZendeskAPIError
-from services.customer_service.whatsapp_service import WhatsAppService, WebhookEvent, Provider, MessageDirection
-from services.customer_service.rag_chatbot import RAGChatbot, ChatbotResponse
-from services.customer_service.survey_service import SurveyService, SurveyType, SurveyRecord
+from typing import Any, Dict, List, Optional
+
+from services.customer_service.rag_chatbot import ChatbotResponse, RAGChatbot
+from services.customer_service.survey_service import SurveyService, SurveyType
+from services.customer_service.whatsapp_service import Provider, WhatsAppService
+from services.customer_service.zendesk_client import (
+    TicketPriority,
+    TicketStatus,
+    ZendeskAPIError,
+    ZendeskClient,
+    ZendeskTicket,
+)
+
 logger = logging.getLogger(__name__)
 
 class HubResponse:

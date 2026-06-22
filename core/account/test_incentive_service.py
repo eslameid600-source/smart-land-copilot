@@ -2,21 +2,17 @@
 Tests for IncentiveService — preview, discount computation, point awarding.
 """
 
-import pytest
 from decimal import Decimal
 
-from purchase_module.models import InvestorProfile, LoyaltyPointsLog, Land
-from purchase_module.services.investor_service import InvestorService
+import pytest
+from purchase_module.models import LoyaltyPointsLog
 from purchase_module.services.incentive_service import (
-    IncentiveService,
-    REPEAT_BUYER_THRESHOLD,
-    REGISTRATION_DISCOUNT_PCT,
-    POINTS_NEEDED_FOR_REDEEM,
-    EGP_PER_POINT,
     MAX_TOTAL_DISCOUNT_PCT,
+    REGISTRATION_DISCOUNT_PCT,
+    IncentiveService,
 )
-from purchase_module.tests.conftest import BUYER_ID, SELLER_ID, LAND_ID
-
+from purchase_module.services.investor_service import InvestorService
+from purchase_module.tests.conftest import BUYER_ID, LAND_ID
 
 # ══════════════════════════════════════════════
 # PREVIEW
@@ -41,7 +37,6 @@ class TestIncentivePreview:
         """A user with 5+ successful purchases gets 2% repeat discount."""
         db = all_fixtures["db"]
         # Buyer has 3 purchases; needs 5. Add 2 more.
-        from purchase_module.services.investor_service import InvestorService
         inv_svc = InvestorService(db)
         for i in range(2):
             await inv_svc.record_purchase(
@@ -71,7 +66,6 @@ class TestIncentivePreview:
     async def test_total_discount_capped_at_10pct(self, all_fixtures):
         """Total discount never exceeds 10% of amount."""
         db = all_fixtures["db"]
-        from purchase_module.services.investor_service import InvestorService
         inv_svc = InvestorService(db)
         for i in range(2):
             await inv_svc.record_purchase(

@@ -15,13 +15,12 @@ Smart Land Management Copilot — TFT Training Pipeline
 التشغيل: python -c "from ai.tft_training import train_tft_model; print('جاهز')"
 """
 
-import os
-import json
-import math
 import logging
+import math
+import os
 import time
-from typing import Optional, Dict, List, Tuple, Any, Union
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -291,7 +290,7 @@ class TimeSeriesPreprocessor:
         season_map = {1: 0, 2: 0, 3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 2, 9: 3, 10: 3, 11: 3, 12: 0}
         df["الموسم"] = df["شهر"].map(season_map).astype(float)
 
-        logger.info(f"تم استخراج 6 ميزات زمنية من عمود التاريخ")
+        logger.info("تم استخراج 6 ميزات زمنية من عمود التاريخ")
 
         return df
 
@@ -753,7 +752,7 @@ def create_dataloaders(
             )
 
     logger.info(
-        f"تم إنشاء DataLoaders: "
+        "تم إنشاء DataLoaders: "
         + ", ".join(f"{k}={len(v.dataset)} عينة" for k, v in loaders.items())
     )
 
@@ -836,7 +835,7 @@ def train_tft_model(
     """
     pass  # torch already imported at module level
 
-    from ai.tft_model import create_tft_model, QuantileLoss, get_model_info
+    from ai.tft_model import QuantileLoss, create_tft_model, get_model_info
 
     # ── إعداد الجهاز ──
     if device is None:
@@ -859,7 +858,7 @@ def train_tft_model(
     # دعم X_train كـ numpy array مباشرة أو كـ dict من النوافذ
     if isinstance(X_train, dict):
         # البيانات جاهزة من TimeSeriesPreprocessor
-        preprocessor = TimeSeriesPreprocessor(
+        TimeSeriesPreprocessor(
             encoder_length=encoder_length,
             decoder_length=decoder_length,
         )

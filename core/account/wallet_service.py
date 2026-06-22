@@ -9,12 +9,13 @@
     - كسب واستبدال نقاط الولاء
     - تحديث عداد المشتريات
 """
-import os
 import logging
+import os
 from datetime import datetime, timezone
-from typing import Optional, Dict, Any
+from typing import Any, Dict
+
 from sqlalchemy import select, update
-from sqlalchemy.ext.asyncio import AsyncSession
+
 from core.account.models import Investor
 
 logger = logging.getLogger(__name__)

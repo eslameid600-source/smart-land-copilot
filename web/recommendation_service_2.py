@@ -5,14 +5,13 @@ Generates dynamic investment recommendations based on
 current market data, trends, and urgency signals.
 """
 
-from datetime import datetime, timedelta
-from typing import List, Dict, Optional
+from datetime import datetime
+from typing import Dict, List, Optional
 
-from models.prediction import PricePrediction
 from models.land import SaturationLevel
-from services.prediction_service import PredictionService
 from services.density_service import DensityService
 from services.logistics_service import LogisticsService
+from services.prediction_service import PredictionService
 
 
 class RecommendationEngine:

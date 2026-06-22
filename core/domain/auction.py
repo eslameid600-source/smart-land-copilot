@@ -7,10 +7,11 @@ including bidding engine, commission/fee structures, and land sourcing.
 
 from __future__ import annotations
 
-from datetime import datetime, date
+from datetime import datetime
 from enum import Enum
-from typing import Optional, List, Dict
-from pydantic import BaseModel, Field, field_validator
+from typing import Dict, List, Optional
+
+from pydantic import BaseModel, Field
 
 
 class AuctionStatus(str, Enum):

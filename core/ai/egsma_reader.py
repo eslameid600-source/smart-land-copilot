@@ -40,7 +40,7 @@ Usage:
 
 import logging
 import os
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Any, Dict, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -185,7 +185,7 @@ class EGSMAReader:
             fpath = os.path.join(self.data_dir, fname)
             if fname.endswith((".tif", ".tiff")):
                 try:
-                    with rio.open(fpath) as src:
+                    with rio.open(fpath):
                         # Use filename without extension as key
                         key = os.path.splitext(fname)[0]
                         self._available_layers[key] = fpath

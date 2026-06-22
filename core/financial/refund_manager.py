@@ -8,19 +8,20 @@
 
 import json
 import logging
-from typing import Optional, List, Dict, Any
+from typing import Any, Dict, List, Optional
 
-from sqlalchemy import select, func
+from payment.models import PaymentTransaction
+from payment.transaction_store import TransactionStore
+from payment.wallet_store import WalletStore
+from payment.webhook_handler import WebhookHandler
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.financial.base import (
-    PaymentRouter, RefundRequest, RefundResult,
+    PaymentRouter,
+    RefundRequest,
+    RefundResult,
     TransactionStatus,
 )
-from payment.models import PaymentTransaction
-from payment.wallet_store import WalletStore
-from payment.transaction_store import TransactionStore
-from payment.webhook_handler import WebhookHandler
 
 logger = logging.getLogger(__name__)
 
@@ -106,8 +107,9 @@ class RefundManager:
             refund_refs.append(result.refund_ref)
 
             # تحديث مباشر في DB
-            from sqlalchemy import update
             from datetime import datetime, timezone
+
+            from sqlalchemy import update
             stmt = (
                 update(PaymentTransaction)
                 .where(PaymentTransaction.transaction_id == transaction_id)

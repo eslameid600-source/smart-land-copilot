@@ -9,15 +9,16 @@
 التزامن: PostgreSQL row-level locks (SELECT ... FOR UPDATE).
 """
 
-import os
 import logging
+import os
 from datetime import datetime, timezone
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict
 
-from sqlalchemy import select, func, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.account.models import Investor
+from core.account.wallet_service import WalletOperationsMixin  # noqa: F401  (re-export)
 
 logger = logging.getLogger(__name__)
 
@@ -78,9 +79,7 @@ class WalletStore:
 
         if not investor:
             # إنشاء حساب مستثمر تلقائياً إن لم يكن موجوداً
-            from core.account.models import _generate_uuid
             investor = Investor(
-                id=_generate_uuid(),
                 user_id=user_id,
                 wallet_balance_egp=amount,
             )

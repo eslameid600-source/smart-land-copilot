@@ -4,7 +4,8 @@ Smart Land Management Copilot — Financial Analysis Models
 Models for ROI, IRR, cash flow projections, and cost breakdowns.
 """
 
-from typing import Optional, List, Dict
+from typing import List
+
 from pydantic import BaseModel, Field
 
 

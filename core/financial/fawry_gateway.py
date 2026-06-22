@@ -21,22 +21,22 @@ Smart Land Management Copilot — Fawry Payment Gateway
     SHA256(merchant_code + merchant_ref_num + customer_profile_id + amount + HMAC_SECRET)
 """
 
-import os
-import hmac
 import hashlib
+import hmac
 import json
-import time
 import logging
-from typing import Optional, List, Dict, Any
+import os
+from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
 
 import requests
-import httpx
-
 from payment.base import (
-    PaymentGateway, PaymentRequest, PaymentResult,
-    RefundRequest, RefundResult,
-    TransactionStatus, SecurityError,
+    PaymentGateway,
+    PaymentRequest,
+    PaymentResult,
+    RefundRequest,
+    RefundResult,
+    TransactionStatus,
 )
 
 logger = logging.getLogger(__name__)
@@ -186,7 +186,6 @@ class FawryGateway(PaymentGateway):
         يُنشئ فاتورة في نظام فوري ويُرجع رابط الدفع.
         """
         # حماية التكرار: إنشاء مفتاح idempotency
-        idempotency_key = request.idempotency_key or request.merchant_ref
 
         # بناء chargeItems من request.items
         charge_items = []

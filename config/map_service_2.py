@@ -22,14 +22,13 @@ SOLID:
 from __future__ import annotations
 
 import logging
-from functools import lru_cache
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
 import folium
 from folium.plugins import MarkerCluster
 
-from config.settings import get_settings, AppConfig, MapConfig
-from data.repository import get_repository, LandRepository
+from config.settings import AppConfig, get_settings
+from data.repository import LandRepository, get_repository
 from models.land import USAGE_COLORS, LandRecord
 
 logger = logging.getLogger(__name__)
@@ -106,7 +105,7 @@ class MapService:
         for land in lands:
             color = USAGE_COLORS.get(land.allowed_usage, "#95a5a6")
             popup_html = self._build_popup(land)
-            label_html = self._build_label(land)
+            self._build_label(land)
 
             marker = folium.CircleMarker(
                 location=[land.latitude, land.longitude],
@@ -191,11 +190,11 @@ class MapService:
     def _build_popup(land: LandRecord) -> str:
         """Build rich HTML popup for a land marker."""
         status_badge = (
-            f'<span style="background:#f39c12;color:#000;padding:2px 8px;'
-            f'border-radius:10px;font-weight:bold;font-size:11px;">AUCTION</span>'
+            '<span style="background:#f39c12;color:#000;padding:2px 8px;'
+            'border-radius:10px;font-weight:bold;font-size:11px;">AUCTION</span>'
             if land.is_auction
-            else f'<span style="background:#27ae60;color:#fff;padding:2px 8px;'
-                 f'border-radius:10px;font-weight:bold;font-size:11px;">DIRECT SALE</span>'
+            else '<span style="background:#27ae60;color:#fff;padding:2px 8px;'
+                 'border-radius:10px;font-weight:bold;font-size:11px;">DIRECT SALE</span>'
         )
 
         auction_block = ""

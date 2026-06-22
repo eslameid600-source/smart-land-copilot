@@ -16,17 +16,9 @@ Run:
     DATABASE_URL="..." python -m pytest tests/test_integration_payment_flow.py -v
 """
 
-import json
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
-
-from sqlalchemy import select, func, text
-
-from core.account.models import Investor, Landowner, WalletTransaction
-from core.account.store import InvestorStore, LandownerStore
-from payment.models import PaymentTransaction
-
 
 # ═════════════════════════════════════════════════════════════════
 # السيناريو 1: شراء كامل — من الإيداع حتى نقل الملكية
@@ -270,7 +262,7 @@ class TestStripeWebhook:
         يجب أن تُنشأ معاملة بحالة PENDING.
         """
         # أولاً: تجميد المبلغ في المشتري (بعد تجميده عند الـ webhook)
-        resp_deposit = await client.post(
+        await client.post(
             "/api/v1/investors/wh-buyer-003/freeze",
             json={"amount_egp": 500_000.0},
         )
@@ -331,7 +323,7 @@ class TestStripeWebhook:
         }
 
         resp = await client.post(
-            f"/api/v1/payments/webhook/fawry",
+            "/api/v1/payments/webhook/fawry",
             json=webhook_body,
         )
 

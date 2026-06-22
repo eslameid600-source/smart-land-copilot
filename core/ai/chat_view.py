@@ -13,12 +13,10 @@ SOLID: SRP — chat rendering and interaction only
 from __future__ import annotations
 
 import streamlit as st
-from typing import Optional
 
-from services.state_manager import get_state, ChatMessage
-from services.rag_service import get_rag_service
 from services.glm_service import get_glm_service
-
+from services.rag_service import get_rag_service
+from services.state_manager import get_state
 
 # ----------------------------------------------------------
 # Suggestion Chips

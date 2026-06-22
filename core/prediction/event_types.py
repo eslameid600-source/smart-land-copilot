@@ -7,10 +7,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
-
 
 # ══════════════════════════════════════════════
 # 1. قنوات الإرسال
@@ -200,7 +199,7 @@ def format_message(event_type: EventType, payload: dict) -> str:
     """
     try:
         return event_type.body_template_ar.format(**payload)
-    except KeyError as e:
+    except KeyError:
         # استبدال جزئي: نُبدّل المتوفر ونترك الناقص كـ نص عادي
         template = event_type.body_template_ar
         import re

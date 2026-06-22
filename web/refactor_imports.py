@@ -45,15 +45,14 @@ Smart Land Management Copilot — Clean Architecture Import Refactorer
     --diff           عرض الفروقات (diff)
 """
 
-import os
-import re
-import sys
+import argparse
 import ast
 import difflib
-import argparse
+import re
+import sys
 import textwrap
 from pathlib import Path
-from typing import List, Dict, Tuple, Optional, Set
+from typing import Dict, List, Optional, Tuple
 
 # ══════════════════════════════════════════════
 # إعدادات
@@ -134,7 +133,6 @@ IMPORT_MAP: Dict[str, str] = {
 
     # ── استيرادات نسبية (غير prefixed) كانت تعمل عبر sys.path ──
     "account_store":               "core.account.store",
-    "geological.service":          "core.geological.service",
 }
 
 # خريطة تحويل خاصة بـ sys.path.insert (لأن بعض الملفات تستخدم sys.path)
@@ -660,7 +658,7 @@ def main():
         )
 
     # تحويل الملفات في الجذر
-    print(f"  📁 (الجذر)")
+    print("  📁 (الجذر)")
     root_py = [f for f in PROJECT_ROOT.glob("*.py") if f.name != "refactor_imports.py"]
     for fp in root_py:
         modified, changes, diff = refactored.refactor_file(fp, apply=args.apply)
@@ -672,7 +670,7 @@ def main():
 
     # ── الإحصائيات ──
     print(f"\n{'─' * 70}")
-    print(f"  الإحصائيات:")
+    print("  الإحصائيات:")
     print(f"    ملفات ممسوحة:   {refactored.stats['files_scanned']}")
     print(f"    ملفات معدّلة:   {refactored.stats['files_modified']}")
     print(f"    استيرادات غُيّرت: {refactored.stats['imports_changed']}")

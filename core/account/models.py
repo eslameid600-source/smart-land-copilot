@@ -22,30 +22,27 @@ Smart Land Copilot — نماذج قاعدة البيانات (SQLAlchemy ORM)
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum as PyEnum
-from typing import Optional
 
 from sqlalchemy import (
-    Column,
-    String,
-    Numeric,
-    Integer,
-    DateTime,
-    ForeignKey,
-    CheckConstraint,
-    Index,
-    Text,
-    Boolean,
     JSON,
+    Boolean,
+    CheckConstraint,
+    Column,
+    DateTime,
     Enum,
     Float,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    String,
+    Text,
 )
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.sql import func
-
 
 # ──────────────────────────────────────────────
 # Base Declaration
@@ -381,7 +378,7 @@ class Broker(Base):
     # العلاقات (نظام التقييم سيُضاف لاحقاً مثل Comment)
     assignments = relationship("BrokerAssignment", back_populates="broker", cascade="all, delete-orphan")
     transactions = relationship("BrokerTransaction", back_populates="broker", cascade="all, delete-orphan")
-    user = relationship("User", backref="broker_profile_ref")
+    user = relationship("User", back_populates="broker_profile")
 
     __table_args__ = (
         CheckConstraint("default_commission_rate BETWEEN 1 AND 20", name="ck_broker_commission_range"),
@@ -696,6 +693,267 @@ class LandownerTransaction(Base):
 
 
 # ──────────────────────────────────────────────
+# Helper: UUID generator
+# ──────────────────────────────────────────────
+
+def _generate_uuid() -> str:
+    """إرجاع UUID كسلسلة نصية — يُستخدم كمولّد افتراضي في بعض الخدمات."""
+    return str(uuid.uuid4())
+
+
+# ──────────────────────────────────────────────
+# Land (عرض الأراضي العام — يختلف عن OwnedLand)
+# ──────────────────────────────────────────────
+
+class Land(Base):
+    """
+    جدول الأراضي العام — يحتوي على معلومات الأرض للعرض والبحث.
+    يرتبط بـ OwnedLand عبر land_id.
+    """
+    __tablename__ = "lands"
+
+    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    land_id = Column(String(50), unique=True, nullable=False, index=True)
+    owner_id = Column(String(36), ForeignKey("landowners.user_id", ondelete="CASCADE"), nullable=False, index=True)
+    current_owner_id = Column(String(36), nullable=True, index=True)
+    land_name = Column(String(200), nullable=False)
+    governorate = Column(String(100), nullable=False)
+    region_city = Column(String(100), nullable=False)
+    total_area_sqm = Column(Integer, nullable=False)
+    price_per_sqm_egp = Column(Numeric(18, 2), nullable=False)
+    total_price_egp = Column(Numeric(18, 2), nullable=False)
+    usage_type = Column(String(50), nullable=True)
+    status = Column(String(50), nullable=False, default="Available")
+    description_ar = Column(Text, nullable=True)
+    images = Column(JSON, nullable=True, default=list)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (
+        Index("ix_land_owner", "owner_id"),
+        Index("ix_land_current_owner", "current_owner_id"),
+        Index("ix_land_status", "status"),
+    )
+
+    def to_dict(self) -> dict:
+        return {
+            "id": str(self.id),
+            "land_id": self.land_id,
+            "owner_id": self.owner_id,
+            "current_owner_id": self.current_owner_id,
+            "land_name": self.land_name,
+            "governorate": self.governorate,
+            "region_city": self.region_city,
+            "total_area_sqm": self.total_area_sqm,
+            "price_per_sqm_egp": float(self.price_per_sqm_egp),
+            "total_price_egp": float(self.total_price_egp),
+            "usage_type": self.usage_type,
+            "status": self.status,
+            "description_ar": self.description_ar,
+            "images": self.images or [],
+            "latitude": self.latitude,
+            "longitude": self.longitude,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+# ──────────────────────────────────────────────
+# Transaction (معاملات البيع/الشراء العامة)
+# ──────────────────────────────────────────────
+
+class Transaction(Base):
+    """
+    جدول المعاملات العامة (بيع/شراء) — يربط البائع والمشتري والأرض.
+    """
+    __tablename__ = "transactions"
+
+    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    transaction_id = Column(String(100), unique=True, nullable=False, index=True)
+    land_id = Column(String(50), nullable=False, index=True)
+    buyer_id = Column(String(36), nullable=False, index=True)
+    seller_id = Column(String(36), nullable=False, index=True)
+    amount_egp = Column(Numeric(18, 2), nullable=False)
+    platform_fee_egp = Column(Numeric(18, 2), nullable=False, default=0)
+    tax_amount_egp = Column(Numeric(18, 2), nullable=False, default=0)
+    broker_commission_egp = Column(Numeric(18, 2), nullable=False, default=0)
+    status = Column(String(50), nullable=False, default="Pending")
+    payment_method = Column(String(50), nullable=True)
+    reference_id = Column(String(100), nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (
+        Index("ix_tx_buyer", "buyer_id"),
+        Index("ix_tx_seller", "seller_id"),
+        Index("ix_tx_status", "status"),
+        CheckConstraint("amount_egp >= 0", name="ck_tx_amount_nonneg"),
+    )
+
+    def to_dict(self) -> dict:
+        return {
+            "id": str(self.id),
+            "transaction_id": self.transaction_id,
+            "land_id": self.land_id,
+            "buyer_id": self.buyer_id,
+            "seller_id": self.seller_id,
+            "amount_egp": float(self.amount_egp),
+            "platform_fee_egp": float(self.platform_fee_egp),
+            "tax_amount_egp": float(self.tax_amount_egp),
+            "broker_commission_egp": float(self.broker_commission_egp),
+            "status": self.status,
+            "payment_method": self.payment_method,
+            "reference_id": self.reference_id,
+            "notes": self.notes,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+        }
+
+
+# ──────────────────────────────────────────────
+# Investment History (سجل استثمارات المستثمر)
+# ──────────────────────────────────────────────
+
+class InvestmentHistory(Base):
+    """سجل عمليات الشراء السابقة للمستثمر — يُستخدم لحساب الخصومات."""
+    __tablename__ = "investment_history"
+
+    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(String(36), ForeignKey("investors.user_id", ondelete="CASCADE"), nullable=False, index=True)
+    land_id = Column(String(50), nullable=False, index=True)
+    transaction_id = Column(String(100), nullable=False, index=True)
+    purchase_price = Column(Numeric(18, 2), nullable=False)
+    points_earned = Column(Integer, nullable=False, default=0)
+    discount_applied = Column(Numeric(18, 2), nullable=False, default=0)
+    purchased_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    __table_args__ = (
+        Index("ix_inv_history_user", "user_id"),
+        Index("ix_inv_history_purchased", "purchased_at"),
+    )
+
+    def to_dict(self) -> dict:
+        return {
+            "id": str(self.id),
+            "user_id": self.user_id,
+            "land_id": self.land_id,
+            "transaction_id": self.transaction_id,
+            "purchase_price": float(self.purchase_price),
+            "points_earned": self.points_earned,
+            "discount_applied": float(self.discount_applied),
+            "purchased_at": self.purchased_at.isoformat() if self.purchased_at else None,
+        }
+
+
+# ──────────────────────────────────────────────
+# Land Commission Settings (إعدادات عمولة الأرض)
+# ──────────────────────────────────────────────
+
+class LandCommissionSettings(Base):
+    """إعدادات العمولة لأرض محددة — يحددها مالك الأرض."""
+    __tablename__ = "land_commission_settings"
+
+    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    land_id = Column(String(50), unique=True, nullable=False, index=True)
+    owner_id = Column(String(36), nullable=False, index=True)
+    broker_commission_pct = Column(Numeric(5, 2), nullable=False, default=2.5)
+    platform_commission_pct = Column(Numeric(5, 2), nullable=False, default=1.0)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
+
+    def to_dict(self) -> dict:
+        return {
+            "id": str(self.id),
+            "land_id": self.land_id,
+            "owner_id": self.owner_id,
+            "broker_commission_pct": float(self.broker_commission_pct),
+            "platform_commission_pct": float(self.platform_commission_pct),
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+# ──────────────────────────────────────────────
+# Loyalty Points Log (سجل نقاط الولاء)
+# ──────────────────────────────────────────────
+
+class LoyaltyPointsLog(Base):
+    """سجل استبدال نقاط الولاء — لكل عملية استبدال سجل مستقل."""
+    __tablename__ = "loyalty_points_log"
+
+    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(String(36), ForeignKey("investors.user_id", ondelete="CASCADE"), nullable=False, index=True)
+    points_used = Column(Integer, nullable=False)
+    reason = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    __table_args__ = (
+        CheckConstraint("points_used >= 0", name="ck_loyalty_points_nonneg"),
+    )
+
+    def to_dict(self) -> dict:
+        return {
+            "id": str(self.id),
+            "user_id": self.user_id,
+            "points_used": self.points_used,
+            "reason": self.reason,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+# ──────────────────────────────────────────────
+# Payment Transaction (معاملات الدفع الإلكتروني)
+# ──────────────────────────────────────────────
+
+class PaymentTransaction(Base):
+    """سجل معاملات الدفع الإلكتروني — للتكامل مع بوابات الدفع."""
+    __tablename__ = "payment_transactions"
+
+    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    payment_id = Column(String(100), unique=True, nullable=False, index=True)
+    user_id = Column(String(36), nullable=False, index=True)
+    transaction_id = Column(String(100), nullable=True, index=True)
+    amount_egp = Column(Numeric(18, 2), nullable=False)
+    currency = Column(String(3), nullable=False, default="EGP")
+    provider = Column(String(50), nullable=False)  # paymob, fawry, stripe, ...
+    provider_txn_ref = Column(String(200), nullable=True)
+    status = Column(String(50), nullable=False, default="pending")  # pending, succeeded, failed, refunded
+    payment_method = Column(String(50), nullable=True)
+    failure_reason = Column(Text, nullable=True)
+    idempotency_key = Column(String(200), nullable=True, index=True)
+    webhook_received_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (
+        Index("ix_payment_user", "user_id"),
+        Index("ix_payment_status", "status"),
+        Index("ix_payment_provider", "provider"),
+        CheckConstraint("amount_egp >= 0", name="ck_payment_amount_nonneg"),
+    )
+
+    def to_dict(self) -> dict:
+        return {
+            "id": str(self.id),
+            "payment_id": self.payment_id,
+            "user_id": self.user_id,
+            "transaction_id": self.transaction_id,
+            "amount_egp": float(self.amount_egp),
+            "currency": self.currency,
+            "provider": self.provider,
+            "provider_txn_ref": self.provider_txn_ref,
+            "status": self.status,
+            "payment_method": self.payment_method,
+            "failure_reason": self.failure_reason,
+            "idempotency_key": self.idempotency_key,
+            "webhook_received_at": self.webhook_received_at.isoformat() if self.webhook_received_at else None,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+# ──────────────────────────────────────────────
 # Exports
 # ──────────────────────────────────────────────
 
@@ -720,4 +978,11 @@ __all__ = [
     "LandGPSLog",
     "WalletTransaction",
     "LandownerTransaction",
+    "Land",
+    "Transaction",
+    "InvestmentHistory",
+    "LandCommissionSettings",
+    "LoyaltyPointsLog",
+    "PaymentTransaction",
+    "_generate_uuid",
 ]

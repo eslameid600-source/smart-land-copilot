@@ -10,10 +10,10 @@ This module provides:
     4. `get_bi_dashboard_data()` — Fast query via Materialized Views
 """
 
-import os
 import logging
+import os
 from datetime import datetime, timezone
-from typing import Optional, List, Dict
+from typing import Dict, List
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine

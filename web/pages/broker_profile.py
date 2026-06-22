@@ -4,8 +4,8 @@
 عرض تفاصيل الوسيط وإحصائياته وأراضيه وأرباحه.
 """
 
-import streamlit as st
 import requests
+import streamlit as st
 
 st.set_page_config(page_title="ملف الوسيط", layout="wide")
 st.title("📋 ملف الوسيط")

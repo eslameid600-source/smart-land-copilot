@@ -18,14 +18,12 @@
   python super_organizer.py --apply --clean  # تنفيذ + حذف المجلدات القديمة
 """
 
-import os
-import sys
-import shutil
-import hashlib
 import argparse
-from pathlib import Path
+import hashlib
+import os
+import shutil
 from collections import defaultdict
-from datetime import datetime
+from pathlib import Path
 
 # ═══════════════════════════════════════════════════════════════
 # إعدادات رئيسية
@@ -322,7 +320,6 @@ def main():
     # ─── الخطوة 2: تصنيف كل ملف ───
     print("🏷️  الخطوة 2/5: تصنيف الملفات حسب الكلمات المفتاحية...")
     file_groups = defaultdict(list)  # target_folder -> [(full_path, rel_path), ...]
-    unclassified = []
 
     for full_path, rel_path in all_files:
         filename = full_path.name

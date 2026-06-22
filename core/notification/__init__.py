@@ -1,1 +1,1 @@
-# Notification package
+"""core.notification — facade."""

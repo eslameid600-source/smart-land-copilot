@@ -7,14 +7,43 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
 
-from core.domain.entities import OwnershipTransferRequest, OwnershipTransferResult
-from core.account.store import transfer_ownership
 from api.routes._deps import get_stores, lands_catalog_global
+from api.routes.account_store import transfer_ownership
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1", tags=["transfer"])
+
+
+# ──────────────────────────────────────────────
+# Pydantic schemas (محلية — بديل core.domain.entities)
+# ──────────────────────────────────────────────
+
+class OwnershipTransferRequest(BaseModel):
+    """نموذج طلب نقل الملكية."""
+    land_id: str = Field(..., description="معرّف الأرض المراد نقل ملكيتها")
+    buyer_id: str = Field(..., description="معرّف المشتري (المستثمر)")
+    commission_pct: Optional[float] = Field(
+        None, description="نسبة العمولة (اختياري — يستخدم الافتراضي للمالك)"
+    )
+    payment_gateway: str = Field("wallet", description="بوابة الدفع: wallet / fawry / stripe")
+
+
+class OwnershipTransferResult(BaseModel):
+    """نموذج نتيجة نقل الملكية."""
+    success: bool
+    land_id: str
+    seller_id: str
+    buyer_id: str
+    sale_price_egp: float
+    commission_egp: float
+    loyalty_points_earned: int
+    new_owner_id: str
+    transaction_id: str
+    transferred_at: str
+    message_ar: str
 
 
 @router.post("/transfer-ownership", response_model=OwnershipTransferResult)
@@ -84,7 +113,6 @@ def _try_fetch_land(land_id: str) -> Optional[dict]:
     محاولة جلب بيانات أرض من خدمة الأراضي (land-service)
     عبر HTTP داخلي أو من البيانات المحلية.
     """
-    import json
 
     # محاولة 1: قراءة من ملف البيانات المحلية
     try:

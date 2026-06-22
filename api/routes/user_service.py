@@ -4,11 +4,19 @@ Smart Land Management Copilot — User Account Service
 Multi-role account management, broker document validation,
 and role-based access control enforcement.
 """
-import uuid
 import logging
+import uuid
 from datetime import datetime
-from typing import List, Dict, Optional
-from models.models.user import UserAccount, UserRole, BrokerVerificationStatus, DocumentType, BrokerDocument
+from typing import Dict, List, Optional
+
+from models.user import (
+    BrokerDocument,
+    BrokerVerificationStatus,
+    DocumentType,
+    UserAccount,
+    UserRole,
+)
+
 logger = logging.getLogger(__name__)
 
 class UserService:

@@ -14,16 +14,17 @@ import logging
 import secrets
 import string
 from datetime import datetime, timezone
-from typing import Optional, List, Dict, Any
-from sqlalchemy import select, update, delete, and_, or_, func
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import and_, delete, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.account.models import (
     Broker,
     BrokerAssignment,
-    BrokerTransaction,
-    BrokerStatus,
     BrokerAssignmentStatus,
+    BrokerStatus,
+    BrokerTransaction,
     BrokerTransactionStatus,
 )
 
@@ -109,6 +110,7 @@ class BrokerRepository:
     async def get(self, broker_id: str) -> Optional[Dict[str, Any]]:
         """استرجاع بيانات وسيط بالمعرف."""
         import uuid
+
         # Handle string IDs by converting to UUID if needed
         try:
             broker_id_uuid = uuid.UUID(broker_id) if isinstance(broker_id, str) else broker_id
@@ -152,7 +154,7 @@ class BrokerRepository:
         stmt = (
             select(Broker)
             .where(Broker.status == BrokerStatus.ACTIVE)
-            .where(Broker.verified_by_admin == True)
+            .where(Broker.verified_by_admin)
             .order_by(Broker.rating_avg.desc().nullslast(), Broker.total_deals_closed.desc())
             .offset(offset)
             .limit(limit)
@@ -314,7 +316,7 @@ class BrokerRepository:
             broker_id_uuid = uuid.UUID(broker_id) if isinstance(broker_id, str) else broker_id
         except (ValueError, AttributeError):
             broker_id_uuid = broker_id
-        broker_id_str = str(broker_id_uuid)
+        str(broker_id_uuid)
         broker = await self.get(str(broker_id_uuid))
         if not broker:
             raise ValueError(f"الوسيط {broker_id} غير موجود")

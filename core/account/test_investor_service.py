@@ -2,18 +2,16 @@
 Tests for InvestorService — profile, wallet, loyalty, deposit.
 """
 
-import pytest
 from decimal import Decimal
 
-from purchase_module.models import InvestorProfile, Land, Transaction
+import pytest
+from purchase_module.models import InvestorProfile
 from purchase_module.services.investor_service import (
-    InvestorService,
-    REPEAT_BUYER_THRESHOLD,
     REGISTRATION_DISCOUNT_PCT,
+    REPEAT_BUYER_THRESHOLD,
+    InvestorService,
 )
-from purchase_module.schemas import TransactionCreate, PaymentMethod
-from purchase_module.tests.conftest import BUYER_ID, SELLER_ID, LAND_ID
-
+from purchase_module.tests.conftest import BUYER_ID, LAND_ID
 
 # ══════════════════════════════════════════════
 # PROFILE
@@ -148,7 +146,7 @@ class TestLoyaltyPoints:
     async def test_redeem_insufficient_points(self, db):
         """Cannot redeem more points than available."""
         svc = InvestorService(db)
-        profile = await svc.get_or_create("empty-user")
+        await svc.get_or_create("empty-user")
         with pytest.raises(ValueError, match="Insufficient"):
             await svc.redeem_loyalty_points("empty-user", 5)
 

@@ -15,11 +15,10 @@ Smart Land Management Copilot — TFT Prediction Model
 التشغيل: python -c "from ai.tft_model import create_tft_model; m=create_tft_model(20,1); print(m)"
 """
 
-import math
 import logging
-from typing import Optional, Dict, List, Tuple, Any
+import math
+from typing import Any, Dict, List, Optional, Tuple
 
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

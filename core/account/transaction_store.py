@@ -9,12 +9,11 @@
 
 import logging
 from datetime import datetime, timezone
-from typing import Optional, List, Dict, Any
-
-from sqlalchemy import select, func, update, delete
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any, Dict, List, Optional
 
 from payment.models import PaymentTransaction
+from sqlalchemy import func, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 

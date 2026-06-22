@@ -15,13 +15,8 @@ from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from purchase_module.database import init_db
-from purchase_module.routers import (
-    payments_router,
-    investors_router,
-    landowners_router,
-)
+from purchase_module.routers import investors_router, landowners_router, payments_router
 
 logging.basicConfig(
     level=logging.INFO,

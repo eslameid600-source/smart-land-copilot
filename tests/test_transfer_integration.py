@@ -7,15 +7,11 @@ integration with dynamic preference checking.
 Run:  pytest tests/test_transfer_integration.py -v
 """
 
-import pytest
-import pytest_asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime, timezone
-from decimal import Decimal
-from typing import Dict, Optional
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
-
 
 # ══════════════════════════════════════════════
 # 1. Transfer Ownership Integration Tests
@@ -70,8 +66,8 @@ class TestTransferOwnershipIntegration:
         5. تحديث الحالة
         6. تحديث الإحصائيات
         """
-        from core.account.transfer_service import transfer_ownership
         from core.account.models import Investor
+        from core.account.transfer_service import transfer_ownership
 
         # Mock investor with sufficient balance
         mock_investor = MagicMock(spec=Investor)
@@ -138,8 +134,8 @@ class TestTransferOwnershipIntegration:
         """
         فشل نقل الملكية بسبب رصيد غير كافٍ — يجب أن يرفع ValueError.
         """
-        from core.account.transfer_service import transfer_ownership
         from core.account.models import Investor
+        from core.account.transfer_service import transfer_ownership
 
         # Mock investor with insufficient balance
         mock_investor = MagicMock(spec=Investor)
@@ -241,8 +237,9 @@ class TestTransferOwnershipIntegration:
         - عمولة المنصة: 0.5% = 125,000
         - صافي البائع: 25,000,000 - 1,250,000 - 125,000 = 23,625,000
         """
-        from core.account.transfer_service import transfer_ownership, PLATFORM_COMMISSION_PCT
         from core.account.models import Investor
+        from core.account.transfer_service import (PLATFORM_COMMISSION_PCT,
+                                                   transfer_ownership)
 
         mock_investor = MagicMock(spec=Investor)
         mock_investor.user_id = "investor-hassan-001"
@@ -386,8 +383,8 @@ class TestNotificationServiceIntegration:
         """
         إرسال إشعار مكرر — يجب أن يرصد النظام التكرار ويرفضه.
         """
-        from core.notification.service import NotificationService
-        from core.notification.service import _build_dedup_key
+        from core.notification.service import (NotificationService,
+                                               _build_dedup_key)
 
         # First call succeeds
         mock_redis.set = MagicMock(return_value=True)  # SETNX success

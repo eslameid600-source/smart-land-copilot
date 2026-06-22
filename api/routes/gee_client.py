@@ -21,9 +21,8 @@ Fallback:
     or in-memory Egypt profile data.
 """
 
-import os
 import logging
-from typing import List, Dict, Optional, Any
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 

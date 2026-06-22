@@ -4,10 +4,12 @@ Smart Land Management Copilot — Customer Service System
 Support ticket management, auto-escalation, and satisfaction tracking.
 """
 import uuid
-from datetime import datetime
-from typing import List, Dict, Optional
-from models.models.models.ticket import SupportTicket, TicketStatus, TicketPriority
+from typing import Dict, List, Optional
+
 from config.settings import get_settings
+from models.models.models.ticket import (SupportTicket, TicketPriority,
+                                         TicketStatus)
+
 
 class CustomerServiceSystem:
     """

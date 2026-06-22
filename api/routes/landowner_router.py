@@ -12,8 +12,8 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request
 
-from core.domain.entities import LandownerCreateRequest, APIResponse
 from api.routes._deps import get_landowner_store
+from core.domain.entities import APIResponse, LandownerCreateRequest
 
 router = APIRouter(prefix="/api/v1", tags=["landowners"])
 
