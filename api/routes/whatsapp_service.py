@@ -873,7 +873,11 @@ class WhatsAppService:
                 "provider": "meta",
             }
         else:
-            logger.error(f"Meta template failed: {response.status_code} {response.text[:200]}")
+            logger.error(
+                "Meta template failed: status_code=%s, response_body_length=%s",
+                response.status_code,
+                len(response.text or ""),
+            )
             return {
                 "success": False,
                 "error": f"Meta error {response.status_code}",
